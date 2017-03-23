@@ -108,8 +108,8 @@
 			$txtDebug .= "\n  \$formdata - ".print_r($formdata, 1)."";
 			//die("<pre>{$txtDebug}</pre>");
 
-			$fields = FormField::where('form_id',$formdata['form_id'])->orderBy("order")->get()->toArray();
-
+			$fields = FormField::where('form_id',$formdata['form_id'])->orderBy("order", "asc")->get()->toArray();
+			$txtDebug .= "\n  \$fields - ".print_r($fields, 1)."";
 
 			if (array_key_exists("data", $formdata)) {
 				if (is_string($formdata['data'])) $data = json_decode($formdata['data'], true);
@@ -122,6 +122,23 @@
 				}
 			}
 
+			/*$fields_tmp = array();
+			foreach ($fields AS $f) $fields_tmp[$f['name']][] = $f;
+			$txtDebug .= "\n  \$fields_tmp - ".print_r($fields_tmp, 1)."";
+			$fields = array();
+			foreach ($fields_tmp AS $field) {
+				if (count($field) == 1) $fields[] = $field[0];
+				else $fields[] = $field[0];
+			}*/
+			$names = array();
+			$names_tmp = array();
+			foreach ($fields AS $f) if (!array_key_exists($f['name'], $names_tmp)) $names_tmp[$f['name']] = 1; else $names_tmp[$f['name']]++;
+			$txtDebug .= "\n  \$names_tmp - ".print_r($names_tmp, 1)."";
+			foreach ($names_tmp AS $name=>$cnt) if ($cnt == 1) $names[$name]= $name; else $names[$name] = "{$name}[]";
+			$txtDebug .= "\n  \$names - ".print_r($names, 1)."";
+			foreach ($fields AS $fi=>$f) $fields[$fi]['name'] = $names[$f['name']];
+			//$txtDebug .= "\n  \$fields - ".print_r($fields, 1)."";
+			//die("<pre>{$txtDebug}</pre>");
 			foreach ($fields AS $fi=>$f) {
 				$opts = json_decode($f['options'], true);
 				if ($f['type'] == "rel") {
@@ -130,10 +147,11 @@
 					$val = [];
 					$dbTable = DbController::getTable($opts['table']);
 					$primary = implode(",", $dbTable['primary']);
-					$txtDebug .= "\n    \$dbTable - ".print_r($dbTable,1);
+					$txtDebug .= "\n    \$key - ".print_r($key,1);
+					//$txtDebug .= "\n    \$dbTable - ".print_r($dbTable,1);
 					$rel = (array)\DB::table($opts['table'])->where($primary, $key)->first();
 					$txtDebug .= "\n    \$rel - ".print_r($rel,1);
-					foreach ($opts['display'] AS $display) $val[] = $rel[$display];
+					if (count($rel) > 0) foreach ($opts['display'] AS $display) $val[] = $rel[$display];
 					$data[$f['name']] = array( $data[$f['name']], implode(" ", $val) );
 				}
 			}
@@ -185,7 +203,34 @@
 				else $formdata = new FormsData(array('form_id'=>$form_id, 'table'=>$table));
 			}
 
-  		$data = json_encode($input['data']);
+			$data = array();
+			$txtDebug .= "\n  Data Stuff";
+  		foreach ($input['data'] AS $k=>$v) if (is_array($v)) {
+  			$txtDebug .= "\n    Array";
+				$data[$k] = json_encode($v);
+				/*foreach ($v AS $vi=>$vv) {
+					if ($vv == "") continue;
+					foreach ($fields AS $fi=>$f) {
+						//$fff = sprintf("%0.1f", $f['order']);
+						list($whole, $frac) = sscanf($f['order'], "%d.%d");
+						if ($frac == $vi) {
+							$txtDebug .= "\n      \$frac - {$frac}, order - {$f['order']}, \$fi - {$fi}";
+							//if (array_key_exists($k,$data)) $data[$k] .= "{$vv}";
+							//else $data[$k] = "{$vv}";
+							$optss = json_decode($f['options'], true);
+							$joiner = "";
+							if ($optss['joiner'] == "line") $joiner = "\n";
+							else if ($optss['joiner'] == "comma") $joiner = ", ";
+							else if ($optss['joiner'] == "space") $joiner = " ";
+							$data[$k] .= "{$f['label']} - {$vv}{$joiner}";
+						}
+					}
+					//if (array_key_exists($k,$data)) $data[$k] .= "\n{$vv}";
+					//else $data[$k] = "{$vv}";
+				}*/
+			} else $data[$k] = $v;
+			$txtDebug .= "\n  \$data - ".print_r($data,1);
+			$data = json_encode($data);
 			$txtDebug .= "\n  \$formdata - ".print_r($formdata,1);
 			///die("<pre>{$txtDebug}</pre>");
   		$formdata->data = $data;

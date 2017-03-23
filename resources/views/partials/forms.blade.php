@@ -86,11 +86,17 @@
       } else if (action == "assign") {
         $(".modalAssignForm").modal();
         launchModalFormAssign(id);
+      } else if (action == "delete") {
+        $(".modalDeleteForm").modal();
+        //$(".modalPreviewForm form").get(0).reset();
+        launchModalDeleteForm(id);
       } else if (action == "edit") {
-        $(".modalEditForm").modal();
+        $(".modalEditForm").modal({spinnerHtml: "Im spinning", showSpinner: true});
+        $("#updateCustomForm").get(0).reset();
         launchUpdateFormModal(id, true);
       } else if (action == "preview") {
         $(".modalPreviewForm").modal();
+        $(".modalPreviewForm form").get(0).reset();
         launchPreviewFormModal(id);
       } else if (action == "manage") {
         console.log(this);
@@ -130,6 +136,7 @@
     var table = opts.table;
     console.log("  name - ",name,", opts - ",opts);
     $.ajax({
+			async: true,
       type    :"GET",
       dataType:"json",
       url     :"forms/database/data/"+ table + "",
@@ -141,7 +148,7 @@
           var val = -1;
           if (data[i]['id']) val = data[i]['id'];
           //if (table.indexOf(name) != -1 && val == val2) sel = "selected";
-          if (val == val2) sel = "selected";
+          if (val == val2) sel = "selected"; // VD CHECK
           if (opts.display) for (var oi = 0; oi < opts.display.length; oi++) text += data[i][opts.display[oi]] + " ";
           text = text.replace(/([^\s]+)\s+$/, "$1");
           $(el).append('<option value="'+val+'" '+sel+'>'+text+'</option>');
@@ -190,7 +197,9 @@
         $("#modalDataForm .modal-body .fields").empty();
         var theRules = {};
         if (data[1] !== null) {
+          var cnt = [];
           for (var i = 0; i < data[1].length; i++) {
+          	if (typeof cnt[data[1][i].name.replace("[]", "")] == "undefined") cnt[data[1][i].name.replace("[]", "")] = 0;
             /*$(".modal-body").append('<div class="form-group"></div>');
              var group = $(".modal-body").find(".form-group").first();
              group.append("<label>RRR</label>");
@@ -215,14 +224,20 @@
             else input = document.createElement("select");
             input.className = "form-control input-sm";
             var name = "data["+data[1][i].name+"]";
+            //if (data[1][i].name.search(/\[\]/) != -1) name = "data["+data[1][i].name.replace("[]", "")+"]"+"["+cnt[data[1][i].name.replace("[]", "")]+"]";
+            if (data[1][i].name.search(/\[\]/) != -1) name = "data["+data[1][i].name.replace("[]", "")+"]"+"[]";
             input.name = name;
-            input.id = data[1][i].name;
+            if (data[1][i].name.search(/\[\]/) == -1) input.id = data[1][i].name;
+            else input.id = data[1][i].name.replace("[]", i);
             ///input.required = true;
             input.style.display = "inline-block";
             input.style.width = "initial";
             ///input.type = "text";
             var val = "";
-            if (data[2] !== null) val = data[2][data[1][i].name];
+            if (data[2] !== null) {
+              if (data[1][i].name.search(/\[\]/) == -1) val = data[2][data[1][i].name];
+              else val = data[2][data[1][i].name.replace("[]", "")];
+            }
             input.value = val;
             $(lbl).attr("for", input.id);
             $(input).attr("data-opts", data[1][i].options);
@@ -326,7 +341,7 @@
               if ((opts.decimals) == 0) $(input).attr("data-rule-digits", "true");
               else $(input).attr("data-rule-number", "true");
             } else if (data[1][i].type == "text" && opts.lines && opts.lines > 1) {
-              $(div).append('<textarea class="form-control" id="'+data[1][i].name+'" name="data['+data[1][i].name+']" rows="'+opts.lines+'">'+val+'</textarea>');
+              $(div).append('<textarea class="form-control" id="'+data[1][i].name+'" name="'+name+'" rows="'+opts.lines+'">'+val+'</textarea>');
             } else if (data[1][i].type == "rel") {
               input.className = "form-control select-sm";
               input.id = data[1][i].name;
@@ -360,7 +375,9 @@
             $(input).attr("title", title);
             $(input).attr("data-original-title", title);
             if (title != "") $(input).tooltip({placement: "right", html: true, animation: true, template: '<div class="tooltip" role="tooltip" style="white-space: pre-wrap"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="background-color: rgba(128,128,128,0.75); "></div></div>',});
+            cnt[data[1][i].name.replace("[]", "")]++;
           }
+          console.log("  cnt - ",cnt);
         }
         //updateFields(data[1]);
 
@@ -438,7 +455,22 @@
             var label = data[1][i].label;
             $(wLabel).append('<b>'+label+'</b>');
             var val = "";
-            if (data[2][data[1][i].name]) val = data[2][data[1][i].name];
+            var theName = data[1][i].name;
+            if (data[2][theName]) val = data[2][theName];
+            if (theName.search(/\[\]/) != -1) {
+              theName = theName.replace("[]", "");
+              val = data[2][theName];
+              try {
+                console.log("Trying to parse ",val,", for ",theName);
+                val = JSON.parse(val);
+                val = val[i];
+              } catch (e) {
+                val = "WtF";
+              }
+            }
+
+
+
             if (data[1][i].type == "boolean") {
               if (val == 0) val = opts[false];
               else if (val == 1) val = opts[true];
@@ -458,7 +490,7 @@
             $(wVal).append('&nbsp;');
             $(wrapper).append(wLabel);
             $(wrapper).append(wVal);
-            $("#modalDataView .modal-body").append(wrapper);
+            if (val) $("#modalDataView .modal-body").append(wrapper);
           }
         }
       }
@@ -481,6 +513,7 @@
         for (var i = 0; i < users.length; i++) {
           var chkId = "chkUser"+i;
           var group = $("#modalAssignForm .modal-body .form-group").first().clone();
+          $(group).css("display", "block");
           group.find(".control-label").text(users[i].name+" "+users[i].surname);
           group.find(".control-label").attr("for", chkId);
           group.find("input[type='checkbox']").get(0).id = chkId;

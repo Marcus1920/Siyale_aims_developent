@@ -12,7 +12,7 @@ class FormsServiceProvider extends ServiceProvider {
 	 *
 	 * @var bool
 	 */
-	protected $defer = true;
+	protected $defer = false;
 	
   /**
    * Bootstrap the application services.
@@ -31,7 +31,7 @@ class FormsServiceProvider extends ServiceProvider {
 	 * @return array
 	 */
 	public function provides() {
-		return array('foo');
+		return array('forms');
 	}
 
   /**

@@ -19,8 +19,16 @@ class Form extends Eloquent {
 		$form_id = $req['formId'];
 		$fields = $req['field'];
 		$table = $req['table'];
-		$txtDebug = "saveFields(req) form_id - {$form_id}, fields<pre>".print_r($fields, 1)."</pre>";
-		$txtDebug .= "\n  fullUrlWithQuery - <pre>".print_r($req->input(),1)."</pre>";
+		//$txtDebug = "saveFields(req) form_id - {$form_id}, fields<pre>".print_r($fields, 1)."</pre>";
+		/*$txtDebug = "saveFields(req) form_id - {$form_id}";
+		$txtDebug .= "\n  \$fields - ".print_r($fields, 1)."";
+		$txtDebug .= "\n  \$fff - ".print_r($fff, 1)."";
+		$txtDebug .= "\n  fullUrlWithQuery - ".print_r($req,1)."";
+		*/
+		$txtDebug = "saveFields(req) form_id - {$form_id}";
+		$txtDebug .= "\n  \$fields - ".print_r($fields, 1)."";
+		$txtDebug .= "\n  \$fff - ".print_r($fff, 1)."";
+		$txtDebug .= "\n  fullUrlWithQuery - ".print_r($req,1)."";
 		\Session::flash('success', "saveFields(req)");
 		\Session::flash('success', "fields<pre>".print_r($fields, 1)."</pre>");
 		$saved = true;
@@ -28,7 +36,7 @@ class Form extends Eloquent {
 		if (count($fields) > 0) foreach ($fields AS $i=>$field) if ($field['id']) {
 			$ids[] = $field['id'];
 		}
-		$txtDebug .= "\n  \$ids<pre>".print_r($ids, 1)."</pre>";
+		$txtDebug .= "\n  \$ids - ".print_r($ids, 1)."";
 		$sqlDelete = "DELETE FROM forms_fields WHERE form_id = {$form_id}";
 		if (count($ids) > 0) $sqlDelete .= " AND id NOT IN (".implode(",", $ids).") ";
 		$txtDebug .= "\n  \$sqlDelete - {$sqlDelete}";
@@ -46,20 +54,27 @@ class Form extends Eloquent {
 						//$field['opts'][$field['type']]['display'] = "";
 					}
 					$field['options'] = json_encode($field['opts'][$field['type']]);
-				}	
+				}	else $field['options'] = json_encode($field['opts']);
 				/////$field = array('id'=>$field_id);
 				/////if ($field_id == -1) $field = array('form_id'=>$form_id, 'name'=>$fields['name'][$i]);
 				//if ($field_id == -1) $field = array('form_id'=>$form_id, 'name'=>$fields['name'][$i], 'type'=>$fields['type'][$i]);
 				//$ff = FormField::where(array('form_id'=>$form_id))->first();
-				$ff = FormField::where(array('id'=>$field['id']))->first();
-				if (!$ff) $ff = new FormField();
+				/*$ff = FormField::where(array('id'=>$field['id']))->first();
+				$txtDebug .= "\n  ff A - ".print_r(($ff != null ? $ff->toArray() : null), 1)."";
+				if (!$ff) $ff = new FormField();*/
+				$txtDebug .= "\n  \$field - ".print_r($field, 1)."";
+				$ff = FormField::findOrNew($field['id']);
+				//$ff = FormField::findOrFail(1);
+				$txtDebug .= "\n  ff Ca - ".print_r($ff->toArray(), 1)."";
 				$ff->fill($field);
-				$txtDebug .= "\n  ff - <pre>".print_r($ff->toArray(), 1)."</pre>";
+				$txtDebug .= "\n  ff Cb - ".print_r($ff->toArray(), 1)."";
 				$saved = $ff->save();
 			}
 		}
 		//parent::save();
-		//die("<pre>$txtDebug<pre>");
+		\Log::info($txtDebug);
+		///die("<pre>$txtDebug<pre>");
+		//echo "<pre>$txtDebug<pre>";
 		return $saved;
 	}
 }

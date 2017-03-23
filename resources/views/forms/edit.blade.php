@@ -104,18 +104,21 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
 
 <script type="text/javascript">
 var cntFields = 0;
+var cntSubFields = 0;
 var tablename = "";
 var form_id =-1;
 
 
 function launchUpdateFormModal(id, clear) {
 	console.log("launchUpdateFormModal(id) id - "+id+", clear - ",clear,", fields - ",$("#formFields .fieldTemplate").length,", this - ",this);
+	//$(".modalAJAX").modal({ escapeClose: false, clickClose: true, showClose: true });
 	$(".modal-body #formId").val(id);
 	//$("#formFields").remove(".fieldTemplate");
 	if (clear) $("#formFields .fieldTemplate").remove();
 	/*$("#cntFields").text($(".fieldTemplate").length);*/
 	cntFields = 0;
 	$.ajax({
+		async: true,
 		type    :"GET",
 		dataType:"json",
 		url     :"{!! url('/forms/"+ id + "')!!}",
@@ -131,9 +134,26 @@ function launchUpdateFormModal(id, clear) {
 				$("#modalEditForm #name").val('');
 			}
 			if(data[1] !== null) {
+			  var notadded = [];
+			  var ii = 0;
 				for (var i = 0; i < data[1].length; i++) {
-					addField(i, data[1][i]);
+				  var orderfloor = Math.floor(data[1][i]['order']);
+				  console.log("  Adding field: i - ",i,", field - ",data[1][i],", order floor - ",orderfloor," = order = ",(orderfloor == data[1][i]['order']));
+					if (data[1][i]['order'] == orderfloor) {
+					  addField(ii, data[1][i]);
+					  ii++;
+          }
+					else {
+            notadded.push(i);
+          }
 				}
+				console.log("  not added - ",notadded);
+        for (var i = 0; i < notadded.length; i++) {
+          $("#formFields .fieldTemplate").each(function(i2, el) {
+            var orderfloor = Math.floor(data[1][notadded[i]]['order']);
+            if ($(el).find("[id^=fieldOrder]").val() == orderfloor) addSubField(el,null, data[1][notadded[i]]);
+          });
+        }
 				updateFields();
 			}
 			/*$(".fieldTemplateClone").each(function(i, el) {
@@ -186,13 +206,19 @@ function launchUpdateFormModal(id, clear) {
 			height = $(window).get(0).innerHeight - 300;
 			console.log("Setting height: window.height - ", $(window).height(), ", form-group height - ",height);
 			$("#formFields").height( height );
+			updateFieldss();
 		}
 	});	
 }
 
 function addChoice(template, val, index) {
-	if (typeof index == "undefined") index = "";
+	console.log("addChoice(template, val, index) template - ",template,", val - ",val,", index - ",index);
+	//if (typeof index == "undefined") index = "";
 	var choices = $(template).find("#optsChoices");
+	if (typeof index == "undefined") {
+		index = getFieldIndex(choices);
+	}
+	console.log("  index - ",index);
 	var wrapper = document.createElement("div");
 	var choice = document.createElement("input");
 	choice.className = "form-control input-sm";
@@ -200,7 +226,9 @@ function addChoice(template, val, index) {
 	if (val) choice.value = val;
 	wrapper.appendChild(choice);
 	choices.append(wrapper);
-	updateFields();
+	///updateFields();
+	//updateFieldss();
+    //updateField(template);
 }
 
 function addChoiceRel(template, val, display) {
@@ -249,7 +277,7 @@ function addField(index, vals) {
 	template.style.display = "block";
 	
 	///$(template).on("mousedown", startDrag);
-	$(template).find(".options").find("[class^='opts']").hide();
+	/////$(template).find(".options").find("[class^='opts']").hide();
 	updateField(template, vals, index);
 	/*$(template).find("input").on("ifClicked", function(ev) {
 		console.log("Checkbox clicked");
@@ -290,6 +318,52 @@ function addField(index, vals) {
 		selectTable(opts.table, true, $(template).find(".optsRelated").get(0), opts, false, index);
 		////updateField(template, vals, index);
 	}
+}
+
+/**
+ * addSubField
+ * @param parent
+ * @param index
+ * @param vals
+ */
+function addSubField(parent, index, vals) {
+  console.log("addSubField(field,index, vals) index - ",index,", vals - ", vals,",field - ",parent);
+  cntSubFields++;
+  /*var indexMain = -1;
+  if (index) indexMain*/
+  if (!index) index = $("#formFields .fieldTemplate").length+1;
+  //if (!index) index = $(parent).find(".fieldTemplate").length;
+  if (!vals) {
+    vals = {};
+    vals['name'] = $(parent).find("input[id^='fieldName']").val();
+    vals['order'] = $(parent).find("input[id^='fieldOrder']").val()+"."+($(parent).find(".wInputs .fieldTemplate").length+1);
+    //vals['type'] $(template).find("[id^='fieldType']").val()
+    vals['type'] = "";
+  }
+  console.log("  index - ",index,", vals - ",vals);
+  var template = $(".fieldTemplate").clone().get(0);
+  $(parent).find(".wInputs").append(template);
+  $(template).find(".addsub").remove();
+  $(template).find(".wInputs").remove();
+  //$(template).find("#fieldName").parentsUntil(".col-md-6").parent().remove();
+  //$(template).find("#fieldName").parentsUntil(".form-group").parent().remove();
+  //$(template).find("#fieldName").parentsUntil(".form-group").parent().hide();
+  $(template).find("[class^='optSub']").show();
+  template.style.clear = "both";
+  template.style.display = "block";
+
+  updateField(template, vals, index);
+  /*if (index) {
+    $(template).find("[name^='field[']").each(function (i, el) {
+      console.log("    subfield element ",i," ",el);
+      el.name = el.name.replace(/\[\d*\]/, "["+index+"]");
+      el.id += index;
+    });
+
+  }
+  if (vals['index']) $(template).find("input[id^='fieldOrder']").val(vals['index']);
+  */
+  if (typeof vals['type'] != "undefined") selectType(template, vals['type']);
 }
 
 function checkForm() {
@@ -354,7 +428,8 @@ function deleteField(field) {
 	updateFields();
 }
 
-function getFieldIndex(template) {
+function getFieldIndex(template, container) {
+  console.log("getFieldIndex(template) template - ", template);
 	console.log("  Searching for index");
 	//var tt = $(template).closest('[name|="field"]');
 	var fieldTemplate = $(template).parents('.fieldTemplate').get(0);
@@ -370,9 +445,16 @@ function getFieldIndex(template) {
   console.log("  index - ",index);
 	if (index == -1) {
 	  index = $("#formFields .fieldTemplate").length;
+      /*$("#formFields .fieldTemplate").each(function(i,el) {
+        console.log("    Checking field ",i);
+      });*/
   }
-  console.log("  index - ",index);
+  console.log("  returning ",index);
 	return index;
+}
+
+function getFieldIndexSub(template) {
+  console.log("getFieldIndexSub(template) template - ", template);
 }
 
 function orderDown(e) {
@@ -384,8 +466,10 @@ function orderUp(e) {
 }
 
 function reorder(dir, el) {
-	console.log("reorder(dir, e) dir - "+dir+", el - ", el);
-	var fields = $("#formFields").find(".fieldTemplate");
+	console.log("reorder(dir, el) dir - "+dir+", el - ", el);
+	var elParent = $(el).parent();
+	console.log("  elParent - ",elParent);
+	var fields = elParent.find(".fieldTemplate");
 	/*var index2 = 0;
 	if (dir > 0) index2 = index-1;
 	else if (dir < 0) index2 = index+1;
@@ -404,15 +488,25 @@ function reorder(dir, el) {
 		}
 	});
 	
-	if (el2 != null) swapElements(el, el2);
-	updateFields();
+	if (el2 != null) {
+      var order = [];
+
+      order.push($(el).find("[id^=fieldOrder]").val());
+      order.push($(el2).find("[id^=fieldOrder]").val());
+      console.log("  order - ", order);
+      swapElements(el, el2);
+      $(el).find("[id^=fieldOrder]").val(order[1]);
+      $(el2).find("[id^=fieldOrder]").val(order[0]);
+    }
+	updateFieldss();
 }
 
 function selectTable(name, rel, template, opts, refresh, index) {
 	var chkSystem = $("#chkSystem").get(0).checked;
 	var form_id = $(".modal-body #formId").val();
 	//var index = $(template).closest('.fieldTemplate');
-	console.log("selectTable(name, rel) form_id - "+form_id+", index - "+index+", name - "+name+", rel - "+rel+", opts - ",opts,", template - ",template,", chkSystem - "+chkSystem);
+  var tStart = new Date().getTime();
+	console.log("selectTable(name, rel) (",tStart,") form_id - "+form_id+", index - "+index+", name - "+name+", rel - "+rel+", opts - ",opts,", template - ",template,", chkSystem - "+chkSystem);
 	if (typeof index == "undefined") {
 		index = getFieldIndex(template);
 	}
@@ -422,12 +516,15 @@ function selectTable(name, rel, template, opts, refresh, index) {
 	}
 	if (name == "0") return;
 	if (name != null) tablename = name;
+	$(template).find(".wLoader").css("display", "inherit");
 	$.ajax({
 		type    :"GET",
 		dataType:"json",
 		url     :"{!! url('/forms/database/tables/"+ tablename + "/"+form_id+"')!!}",
 		success :function(data) {
-			
+          var tSuccess = new Date().getTime();
+          var tSince = tSuccess - tStart;
+			console.log("selectTable() SUCCESS (",tSuccess,", ",tSince,"ms since ",tStart,"), name - ",name);
 			console.log("data - ", data);
 			if(data !== null) {
 				var systemTables = ["active","created_at", "created_by", "id","remember_token", "updated_at", "updated_by"];
@@ -475,16 +572,30 @@ function selectTable(name, rel, template, opts, refresh, index) {
 				updateFieldss();
 			}
 			console.log("WtF!? A");
+            var tEnd = new Date().getTime();
+            tSince = tEnd - tStart;
+            console.log("selectTable() SUCCESS END (",tEnd,", ",tSince,"ms since ",tStart,"), name - ",name);
 			///updateField(template, null, index);
+          $(template).find(".wLoader").css("display", "none");
 		}
 	});
 }
 
 function selectType(template, selection) {
-	//console.log("selectType(template, selection) template - ", template,", selection - ", selection);
+	///console.log("selectType(template, selection) template - ", template,", selection - ", selection);
+	console.log("selectType(template, selection) selection - ", selection);
 	$(template).find(".options").find("[class^='opts']").hide();
-	if (selection != "") selection = selection[0].toUpperCase()+selection.substr(1);
-	$(template).find(".options").find("[class^='opts"+selection+"']").show();
+	///$(template).find(".options").find("[class^='opts']").show();
+	if (selection != "") {
+	  selection = selection[0].toUpperCase()+selection.substr(1);
+    $(template).find(".options").find("[class^='opts"+selection+"']").show();
+  }
+
+	//$(template).find(".options").find("[class^='opts']:not([class^='opts"+selection+"'])").hide();
+	/*$(template).find(".options").find("[class^='opts']").not("[class^='opts"+selection+"']").hide();
+  $(template).find(".options").find("[class^='opts']:hidden").find("[name^='field']").attr("disabled", "disabled");
+  $(template).find(".options").find("[class^='opts']:visible").find("[name^='field']").attr("disabled", null);*/
+  //$(template).find(".options").find("[class^='opts']").show();
 }
 
 function swapElements(obj1, obj2) {
@@ -511,11 +622,14 @@ function swapElements(obj1, obj2) {
 }
 
 function updateField(template, vals, index) {
-	console.log("updateField(template, vals, index) vals - ",vals,",index - ", index,", template - ",template);
+	var tStart = new Date().getTime();
+	//console.log("updateField(template, vals, index) vals - ",vals,",index - ", index,", template - ",template);
+	console.log("updateField(template, vals, index) vals - ",vals,",index - ", index);
 	if (template == null) return;
 	if (typeof index == "undefined") {
 		index = getFieldIndex(template);
 	}
+	console.log("  index - ",index);
 	if (typeof index != "undefined") $(template).find("[name*='field']").each(function(i2, el2) {
 		el2.name = el2.name.replace(/\[\d*\]/, "["+index+"]");
 		if (el2.id != "") el2.id = el2.id.replace(/\d*$/, index);
@@ -525,6 +639,7 @@ function updateField(template, vals, index) {
 		$(template).find(".sort_desc").off("click");
 		$(template).find(".delete").off("click");
 		$(template).find(".duplicate").off("click");
+		$(template).find(".addsub").off("click");
 		$(template).find(".sort_asc").on("click", function(e) {
 			reorder(1, template);
 		});
@@ -537,7 +652,14 @@ function updateField(template, vals, index) {
 		$(template).find(".duplicate").on("click", function(e) {
 			duplicateField(template);
 		});
+		$(template).find(".addsub").on("click", function(e) {
+			addSubField(template);
+		});
+        $(template).find("[id^='btnAddChoice']").on("click", function(ev) {
+            addChoice(template);
+        });
 	}
+	console.log("  updateField since A: "+(new Date().getTime()-tStart)+"ms");
 	if (vals) {
 		if (vals.id) $(template).find("[id^=fieldId]").val(vals.id);
 		if (vals.name) $(template).find("[id^=fieldName]").val(vals.name);
@@ -586,38 +708,51 @@ function updateField(template, vals, index) {
 		if (vals.len) {
 			$(template).find("[id^=txtMax]").val(vals.len);
 		}
-	}
+	} else {
+		selectType(template, "");
+    }
+	console.log("  updateField since Ba: "+(new Date().getTime()-tStart)+"ms");
 	$(template).find("input").iCheck("destroy");
-	$(template).find("input").iCheck({
+	$(template).find("input[type='radio']").iCheck({
 		    checkboxClass: 'icheckbox_minimal',
 		    radioClass: 'iradio_minimal'
 		    , increaseArea: '20%'
 	});
-	
+	console.log("  updateField since C: "+(new Date().getTime()-tStart)+"ms");
 	var toTip = $(template).find("[title!='']");
 	toTip = $(template).find("[data-original-title!='']");
-	console.log("toTip - ",toTip);
-	toTip.each(function() {
+	console.log("  Tipping "+toTip.length+" elements");
+	//////console.log("toTip - ",toTip);
+	console.log("  updateField since D: "+(new Date().getTime()-tStart)+"ms");
+	toTip.each(function(i) {
+      if (typeof $(toTip[i]).attr("data-original-title") == "undefined") return;
+		if (typeof $(toTip[i]).attr("data-original-title") != "undefined") console.log("    Tipping ",i," - ",$(toTip[i]).attr("data-original-title"));
 		$(this).tooltip("destroy");
 		$(this).tooltip( {placement:"right", track: true } );
 	});
-
+	console.log("  updateField since Z: "+(new Date().getTime()-tStart)+"ms");
   $(template).find("[id^='fieldType']").on("change", function(ev) {
     console.log("fieldType.change: ev - ", ev, ", this - ",this);
     selectType(template, this.options[this.selectedIndex].value);
   });
+    var tEnd = new Date().getTime();
+    var tTotal = tEnd - tStart;
+    console.log("  updateField end: "+tTotal+"ms");
 }
 
 function updateFieldss() {
-	console.log("updateFields() this - ",this);
+	console.log("updateFieldss() this - ",this);
 	var fields = $("#formFields").find(".fieldTemplate");
 	fields.each(function(index) {
-		///console.log("Updating field "+index+" of "+fields.length+", ordering buttons - ",$(this).find(".sort_asc").length);
-		if (index == 0) $(this).find(".sort_asc").css("visibility","hidden");
+		console.log("Updating field "+index+" of "+fields.length+", ordering buttons - ",$(this).find(".sort_asc").length);
+		/*if (index == 0) $(this).find(".sort_asc").css("visibility","hidden");
 		else $(this).find(".sort_asc").css("visibility","visible");
 		if (index > 0 && index == fields.length-1) $(this).find(".sort_desc").css("visibility","hidden");
-		else $(this).find(".sort_desc").css("visibility","visible");
-		$(this).find("[id^=fieldOrder]").val(index);
+		else $(this).find(".sort_desc").css("visibility","visible");*/
+		var order = $(this).find("[id^=fieldOrder]").val();
+        if (order == 0) $(this).find(".sort_asc").css("visibility","hidden");
+        else $(this).find(".sort_asc").css("visibility","visible");
+		//$(this).find("[id^=fieldOrder]").val(index);
 	});
 	
 	fields.each(function(i, el) {
@@ -646,7 +781,7 @@ function updateFieldss() {
 		});
 		var selType = $(el).find("[id^='fieldType']").get(0);
 		///selectType(el, selType.options[selType.selectedIndex].value);
-
+console.log("Adding click handler to btnAddChoice");
 		$(el).find("[id^='btnAddChoice']").on("click", function(ev) {
 			addChoice(el);
 		});
@@ -673,6 +808,10 @@ function updateFieldss() {
 			    radioClass: 'iradio_minimal',
 			    //increaseArea: '50%' // optional
 		});*/
+}
+
+function updateSubfield() {
+
 }
 
 $(document).ready(function() {

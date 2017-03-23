@@ -16,7 +16,7 @@
             <div class="modal-footer">
 							<div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
-                    <button type="submit" id='submitTestCustomForm' type="button" class="btn btn-sm">Test</button>
+                    {{--<button type="submit" id='submitTestCustomForm' type="button" class="btn btn-sm">Test</button>--}}
                 </div>
             	</div>
             </div>
@@ -26,7 +26,7 @@
 </div>
 <script type="text/javascript">
 function launchPreviewFormModal(id) {
-	var symbols = { AUD: "$", BRL: "R$", CAD: "$", CNY: "¥", EUR: "€", HKD: "$", INR: "?", JPY: "¥", MXN: "$", NZD: "$", NOK: "kr", GBP: "&pound;", RUB: "?",SGD: "$", KRW: "?", SEK: "kr", CHF: "Fr", TRY: "?", USD: "$", ZAR: "R" }
+	var symbols = { AUD: "$", BRL: "R$", CAD: "$", CNY: "ï¿½", EUR: "ï¿½", HKD: "$", INR: "?", JPY: "ï¿½", MXN: "$", NZD: "$", NOK: "kr", GBP: "&pound;", RUB: "?",SGD: "$", KRW: "?", SEK: "kr", CHF: "Fr", TRY: "?", USD: "$", ZAR: "R" }
 	
 	$.ajax({
 		type    :"GET",
@@ -63,7 +63,11 @@ function launchPreviewFormModal(id) {
 					div.className = "col-md-6";
 					
 					var input = null;
-					if (data[1][i].type != "choice" && data[1][i].type != "rel" && opts.type != "select") input = document.createElement("input");
+                    if (data[1][i].type == "text" && opts.lines && opts.lines > 1) {
+                        input = document.createElement("textarea");
+                        $(input).attr("rows", opts.lines);
+                    }
+					else if (data[1][i].type != "choice" && data[1][i].type != "rel" && opts.type != "select") input = document.createElement("input");
 					else input = document.createElement("select");
 					input.className = "form-control input-sm";
 					input.name = data[1][i].name;
@@ -149,9 +153,9 @@ function launchPreviewFormModal(id) {
 						});*/
 						if ((opts.decimals) == 0) $(input).attr("data-rule-digits", "true");
 						else $(input).attr("data-rule-number", "true");
-					} else if (data[1][i].type == "text" && opts.lines && opts.lines > 1) {
-						$(div).append('<textarea class="form-control" id="'+data[1][i].name+'" rows="'+opts.lines+'"></textarea>');
-					} else if (data[1][i].type == "rel") {
+					} /*else if (data[1][i].type == "text" && opts.lines && opts.lines > 1) {
+						//$(div).append('<textarea class="form-control" id="'+data[1][i].name+'" rows="'+opts.lines+'"></textarea>');
+					} */else if (data[1][i].type == "rel") {
 						input.className = "form-control select-sm";
 						input.id = data[1][i].name;
 						getRelatedItems(opts, input);

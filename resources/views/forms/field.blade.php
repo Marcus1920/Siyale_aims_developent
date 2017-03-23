@@ -12,8 +12,12 @@
   $types['currency'] = array();
   foreach ($currencies AS $currency) 
   $types['currency'][$currency['iso']] = $currency['name'];
+  $types['number'] = array(''=>"-- Select --",'text'=>"Text Field", 'select'=>"Dropdown", 'spinner'=>"Spinner");
   //die("\$types - <pre>".print_r($types, 1)."</pre>");
   //foreach ($types AS &$types2) array_unshift($types2, array(''=>"-- Select --"));
+
+	$joiners = array('line'=>"Line", 'comma'=>"Comma", 'space'=>"Space");
+
   static $called = 0;
   $index = "";
   if (isset($i)) $index = $i;
@@ -28,6 +32,7 @@ if (isset($field)) $fff = json_encode($field);
 		<a class="btn btn-sm sort_desc" title="Move field down"><img src="{{asset('images/icon_order_down.png')}}"></a>
 		<a class="btn btn-sm delete" title="Delete field"><img src="{{asset('images/icon_delete.png')}}"></a>
 		<a class="btn btn-sm duplicate" title="Duplicate field"><img src="{{asset('images/icon_duplicate.png')}}"></a>
+		<a class="btn btn-sm addsub" title="Add sub field"><img src="{{asset('images/icon_addsub.png')}}"></a>
 		<!--<a class="btn btn-sm sort_asc" title="Move field up">^</a>
 		<a class="btn btn-sm sort_desc" title="Move field down">v</a>
 		<a class="btn btn-sm delete" title="Delete field">-</a>
@@ -36,13 +41,15 @@ if (isset($field)) $fff = json_encode($field);
 	<!--<div>{{$fff}}</div>-->
 	<!--<hr style="width: 75%"><br>-->
 	<div>
-		{!! Form::hidden('field['.$index.'][id]',isset($field) ? $field['id'] : NULL,['class' => 'form-control input-sm','id' => 'fieldId']) !!}
-		{!! Form::hidden('field['.$index.'][order]',isset($field) ? $field['order'] : NULL,['class' => 'form-control input-sm','id' => 'fieldOrder']) !!}
 		<div style="" class="col-md-6">
+			<div>
+				{!! Form::hidden('field['.$index.'][id]',isset($field) ? $field['id'] : NULL,['class' => 'form-control input-sm','id' => 'fieldId', 'style'=>"width: 5em; display: initial; height: initial; margin: 0; padding: 0"]) !!}
+				{!! Form::hidden('field['.$index.'][order]',isset($field) ? $field['order'] : NULL,['class' => 'form-control input-sm','id' => 'fieldOrder', 'style'=>"width: 5em; display: initial; height: initial; margin: 0; padding: 0"]) !!}
+			</div>
 			<div style="clear: both;" class="form-group">
 				{!! Form::label('fieldName', 'Name', array('class' => 'col-md-3 control-label')) !!}
 				<div class="col-md-9">
-				{!! Form::text('field['.$index.'][name]',isset($field) ? $field['name'] : NULL,['class' => 'form-control input-sm','id' => 'fieldName']) !!}
+				{!! Form::text('field['.$index.'][name]',(isset($field) && isset($field['name'])) ? $field['name'] : NULL,['class' => 'form-control input-sm','id' => 'fieldName', 'title'=>"Name"]) !!}
 				<div class="invalid">* Required</div>
 				@if ($errors->has('field.'.$index.'.name')) <p class="help-block red">*{{ $errors->first('field.'.$index.'.name') }}</p> @endif
 				</div>
@@ -50,15 +57,19 @@ if (isset($field)) $fff = json_encode($field);
 			<div style="clear: both;" class="form-group">
 				{!! Form::label('fieldLabel', 'Label', array('class' => 'col-md-3 control-label', 'style'=>"float: left")) !!}
 				<div class="col-md-9">
-				{!! Form::text('field['.$index.'][label]',isset($field) ? $field['label'] : NULL,['class' => 'form-control input-sm','id' => 'fieldLabel']) !!}
+				{!! Form::text('field['.$index.'][label]',isset($field) ? $field['label'] : NULL,['class' => 'form-control input-sm','id' => 'fieldLabel', 'title'=>"Label"]) !!}
 				<div class="invalid">* Required</div>
 				</div>
 			</div>
 			<div style="clear: both;" class="form-group">
-				{!! Form::label('fieldDesc', 'Description', array('class' => 'col-md-3 control-label', 'style'=>"float: left")) !!}
+				{!! Form::label('fieldDesc', 'Desc', array('class' => 'col-md-3 control-label', 'style'=>"float: left")) !!}
 				<div class="col-md-9">
-				{!! Form::textarea('field['.$index.'][desc]',isset($field) ? $field['desc'] : NULL,['class' => 'form-control input-sm','id' => 'fieldDesc', 'rows'=>2]) !!}
+				{!! Form::textarea('field['.$index.'][desc]',isset($field) ? $field['desc'] : NULL,['class' => 'form-control input-sm','id' => 'fieldDesc', 'rows'=>2, 'title'=>"Description"]) !!}
 				</div>
+			</div>
+			<div class="optSub" style="width: auto; display: none; line-height: 2em;">
+				<div>{!! Form::label('', 'Separator / Concatenator', array('class' => 'col-md-4 control-label')) !!}</div>
+				<div>{!! Form::select('field[][opts][joiner]',$joiners, 0,['class' => 'form-control select-sm','id' => 'selJoiner', 'style'=>"width: 10em; display: initial"]) !!}</div>
 			</div>
 		</div>
 		<div class="col-md-6" style="position: relative; white-space: nowrap;">
@@ -83,6 +94,7 @@ if (isset($field)) $fff = json_encode($field);
 				<div class="optsChoice" style="clear: both; margin-left: 1em;">
 					<div style="clear: both;">
 						{!! Form::label('chkMultichoice', 'Multiple', array('class' => 'col-md-4 control-label')) !!}
+						{!! Form::hidden('field[][opts][choice][multi]',0,['id'=>'chkMultichoice_']) !!}
 						{!! Form::checkbox('field['.$index.'][opts][choice][multi]',1, false,['id'=>'chkMultichoice', 'style'=>"padding-top: 10px;opacity: 1"]) !!}
 					</div>
 					<div style="clear: both;">
@@ -138,10 +150,11 @@ if (isset($field)) $fff = json_encode($field);
 				<div class="optsNumber" style="clear: both; margin-left: 1em;">
 					<div>
 							{!! Form::label('chkNegative', 'Negatives', array('class' => 'col-md-4 control-label')) !!}
+							{!! Form::hidden('field[][opts][number][negative]',0,['id'=>'chkNegative_']) !!}
 							{!! Form::checkbox('field[][opts][number][negative]',1, null,['id'=>'chkNegative', 'style'=>"padding-top: 10px;opacity: 1"]) !!}
 					</div>
 					<div>
-						{!! Form::label('txtDecimals', 'Decimals', array('class' => 'col-md-4 control-label')) !!}
+						{!! Form::label('txtDecimals', 'Decimals', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
 						{!! Form::text('field[][opts][number][decimals]',"0",['class' => 'form-control input-sm','id'=>'txtDecimals', 'style'=>"opacity: 1; width: 4em !important", 'maxlength'=>"3"]) !!}
 					</div>
 					<div>
@@ -151,6 +164,10 @@ if (isset($field)) $fff = json_encode($field);
 					<div>
 						{!! Form::label('txtMax', 'Max', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
 						{!! Form::text('field[][opts][number][max]',null,['class' => 'form-control input-sm','id'=>'txtMax', 'style'=>"width: 5em !important", 'maxlength'=>"-1"]) !!}
+					</div>
+					<div>
+						{!! Form::label('selInputType', 'Input Type', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
+						{!! Form::select('field[][opts][number][inputtype]',$types['number'], "",['class' => 'form-control select-sm','id'=>'selInputType', 'style'=>"width: 50% !important", 'maxlength'=>"-1"]) !!}
 					</div>
 				</div>
 				<div class="optsText" style="clear: both; margin-left: 1em;">
@@ -172,17 +189,24 @@ if (isset($field)) $fff = json_encode($field);
 						{!! Form::label('txtRelTable', 'Table', array('class' => 'col-md-4 control-label')) !!}
 						{!! Form::select('field[][opts][rel][table]',$dbTables, 0,['class' => 'form-control select-sm','id' => 'txtRelTable', 'style'=>"width: 10em", 'onchange'=>"selectTable(this.options[this.selectedIndex].value, true, this.parentNode.parentNode)"]) !!}
 					</div>
-					<div>
-						{!! Form::label('', 'Display Fields', array('class' => 'col-md-4 control-label')) !!}
-						<div style="white-space: normal; padding: 8px; width: 20em; position: relative; left: 10px;"><small>The constructed content for each related item will be a space-seperated string of the values for these fields</small></div>
-						<div class="displayFields">
+					<div style="border: 1px solid rgba(255, 255, 255, 0.3); margin-top: 0.5em">
+						{!! Form::label('', 'Display Fields', array('class' => 'col-md-4 control-label', 'style'=>"padding: 0; margin: 0")) !!}
+						<div style="white-space: normal; padding: 1px; width: 20em; position: relative; left: 10px;"><small>The constructed content for each related item will be a space-seperated string of the values for these fields</small></div>
+						<div class="displayFields" style="height: 7.25em; line-height: 1.25em; overflow-y: auto; padding: 0.25em">
 						
+						</div>
+						<div class="wLoader" style="display: none; position: absolute; top: 50%; left: 50%;">
+							{{--<h1>Loading AJAX</h1>--}}
+							<img src="{{ asset("/img/media-player/loading.gif") }}">
 						</div>
 					</div>
 				</div>
 				<br>
 				<br>
 			</div>
+		</div>
+		<div class="wInputs" style="clear: both">
+			{!! Form::label('lblInputs', 'Inputs', array('class' => 'col-md-2 control-label')) !!}
 		</div>
 	</div>
 </div>

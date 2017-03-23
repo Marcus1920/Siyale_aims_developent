@@ -53,6 +53,7 @@
 @include('forms.preview')
 @include('forms.field')
 @include('forms.edit')
+@include('forms.delete')
 @include('forms.assign')
 @include('forms.add')
 @endsection
@@ -109,7 +110,7 @@
 			//alert("Launching update form for id <?php echo Request::old("formId"); ?>");
 			$('#modalEditForm').modal('show');
 			//launchUpdateFormModal(<?php echo Request::old("formId"); ?>, false);
-			updateFields();
+			updateFieldss();
 		@else
 			$('#modalAddForm').modal('show');
 		@endif

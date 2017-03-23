@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\FormsData;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Http\Requests\DistrictRequest;
@@ -35,6 +36,7 @@ class FormsController extends Controller {
 		$txtDebug .= "\n  \$tables - ".print_r($tables, 1);
 		\View::share('dbTables', $tables);
 		//die("<pre>{$txtDebug}</pre>");
+		\Log::info($txtDebug);
 	}
 
 	public function assigned($uid = null) {
@@ -108,6 +110,7 @@ class FormsController extends Controller {
 	          <select onchange="doAction(this,{{$id}}, { what: \'form\' });" class="form-control input-sm selFormOptions">
 	              <option value="0">Select</option>
 	              <option value="assign">Assign</option>
+	              <option value="delete">Delete</option>
 	              <option value="edit">Edit</option>
 	              <option value="preview">Preview</option>
 	              <option value="manage">Manage Data</option>
@@ -173,6 +176,67 @@ class FormsController extends Controller {
 		return redirect()->back();
 
 	}
+
+	public function delete($id = null) {
+		//$req = Request::all();
+		$txtDebug = "FormsController->delete(\$id) \$id - {$id}";
+		//$txtDebug .= "\n  \$_REQUEST - ".print_r($_REQUEST, 1);
+		//$txtDebug .= "\n  \$req - ".print_r($req, 1);
+		if (!$id) $id = $_REQUEST['formId'];
+		$form = Form::where('id',$id)->first()->toArray();
+		$fields = FormField::select("*")->where('form_id', $id)->get();
+		$data = null;
+		$cntFields = $fields->count();
+		$cntDeleted = array(0, 0, 0);
+		$cntItems = 0;
+		$table = "forms_data";
+		if ($form['table'] == "") {
+			$data = FormsData::where('form_id',$id)->get();
+		} else {
+			$table = $form['table'];
+		}
+
+		if ($data) $cntItems = $data->count();
+		$txtDebug .= "\n  Deleting form {$id}";
+		$txtDebug .= "\n    Deleting {$cntItems} items from {$table}";
+		$deleted = 0;
+		if ($data) foreach ($data AS $d) {
+			$deleted = $d->delete();
+			$cntDeleted[2] += $deleted;
+			if ($deleted) $txtDebug .= "\n      Deleted item, \$deleted - {$deleted}";
+			else $txtDebug .= "\n      Error deleting item, \$deleted - {$deleted}";
+		}
+		$txtDebug .= "\n    Deleting {$cntFields} fields";
+		/*for ($i = 0; $i < $fields->count(); $i++) {
+			$deleted = FormField::delete();
+		}*/
+		$deleted = 0;
+		foreach ($fields AS $f) {
+			$deleted = $f->delete();
+			$cntDeleted[1] += $deleted;
+			if ($deleted) $txtDebug .= "\n      Deleted field, \$deleted - {$deleted}";
+			else $txtDebug .= "\n      Error deleting field, \$deleted - {$deleted}";
+		}
+		$deleted = 0;
+		if ($cntDeleted[1] == $cntFields) {
+			$deleted = Form::where('id',$id)->delete();
+			$cntDeleted[0] = $deleted;
+			if ($cntDeleted[0]) $txtDebug .= "\n    Deleted form, \$deleted - {$deleted}";
+			else $txtDebug .= "\n    Error deleting field, \$deleted - {$deleted}";
+		}
+		$txtDebug .= "\n    Deleted {$cntDeleted[0]} form, {$cntDeleted[1]} of {$cntFields} field(s) & {$cntDeleted[2]} of {$cntItems} item(s)";
+		$txtDebug .= "\n  \$form - ".print_r($form, 1);
+		$txtDebug .= "\n  \$fields - ".print_r($fields->toArray(), 1);
+		$txtDebug .= "\n  \$data - ".print_r(($data != null ? $data->toArray() : array()), 1);
+		//die("<pre>{$txtDebug}</pre>");
+		if ($cntDeleted[0]) {
+			\Session::flash('success', "Deleted form & {$cntDeleted[1]} of {$cntFields} field(s) & {$cntDeleted[2]} of {$cntItems} item(s)");
+			return redirect()->back();
+		} else {
+			\Session::flash('failure', "Whoops! Error deleting form! Deleted {$cntDeleted[1]} of {$cntFields} field(s) & {$cntDeleted[2]} of {$cntItems} item(s)");
+			return redirect()->back()->withInput();
+		}
+	}
 	
 	public function edit($id) {
 		//echo "FormsController->edit(\$id) \$id - {$id}";
@@ -191,7 +255,8 @@ class FormsController extends Controller {
 		$form->slug       = $request['slug'];
 		$form->purpose   = $request['purpose'];
 		$form->table = $request['table'];
-		$form->created_by = 3;
+		$form->created_by = \Auth::user()->id;
+		$txtDebug .= "\n  \$form - ".print_r($form->toArray(), 1);
 		//die("<pre>{$txtDebug}</pre>");
 		$saved = $form->save();
 		if ($saved) {
@@ -213,17 +278,33 @@ class FormsController extends Controller {
   */
   public function update(FormsRequest $request) {
 		$txtDebug = "FormsController->update(\$request)";
-		if ($request) $txtDebug .= " \$request - ".print_r($request->input(),1);
+		$req = array();
+		if ($request) {
+			$req = $request->all();
+			$txtDebug .= "\n  \$request - ".print_r($request->all(),1);
+			//$fields = $request['field'];
+		}
+		//die("<pre>{$txtDebug}</pre>");
+		if (array_key_exists("field", $req)) {
+		foreach($req['field'] AS $i=>$f) {
+			$joiner = array_key_exists("joiner", $f['opts']) ? $f['opts']['joiner'] : "line";
+			$req['field'][$i]['opts'] = $f['opts'][$f['type']];
+			$req['field'][$i]['opts']['joiner'] = $joiner;
+			if ($f['type'] == "choice" && !array_key_exists("options", $req['field'][$i]['opts'])) $req['field'][$i]['opts']['options'] = array();
+		}
+		$txtDebug .= "  \$fields - ".print_r($req['field'],1)."";
+		}
+
   	$form               = Form::where('id',$request['formId'])->first();
     $form->name         = $request['name'];
     $form->purpose   = $request['purpose'];
 		$form->table = $request['table'];
     $form->updated_by   = \Auth::user()->id;
-    //die("<pre>FormsController->update(\$request) \$request - ".print_r($request->all(),1)."</pre>");
-		//die("<pre>{$txtDebug}</pre>");
+    //$txtDebug .= "  \$request - ".print_r($request->all(),1)."";
+		///die("<pre>{$txtDebug}</pre>");
     $saved = $form->save();
-    $saved = $form->saveFields($request, $this);
-
+    if (array_key_exists("field", $req)) $saved = $form->saveFields($req, $this);
+		//die("<pre>{$txtDebug}</pre>");
     //die("<pre>FormsController->update(\$request) \$request - ".print_r($request->all(),1)."</pre>");
     //\Session::flash('success', "REQUEST<pre>".print_r($request, 1)."</pre>");
     if ($saved) {

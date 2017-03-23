@@ -1082,6 +1082,7 @@ Route::get('forms/{id}', ['middleware' => 'resetLastActive', 'uses' => 'FormsCon
 Route::post('addForm', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@store']);
 Route::post('assignForm', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@assign']);
 Route::get('closeAssigned/{id}', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@closeAssigned']);
+Route::post('deleteForm', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@delete']);
 Route::post('updateForm', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@update']);
 
 Route::get('forms/assigned/{uid}', ['middleware' => 'resetLastActive', 'uses' => 'FormsController@assigned']);

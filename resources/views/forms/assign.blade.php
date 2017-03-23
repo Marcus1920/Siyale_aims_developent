@@ -8,13 +8,13 @@
       </div>
       <div class="modal-body">
         {!! Form::open(['url' => 'assignForm', 'method' => 'post', 'class' => 'form-horizontal', 'id'=>"testCustomForm", 'style'=>"height: 100%", 'novalidate_'=>"" ]) !!}
-        form_id {!! Form::text("form_id", null, array('class'=>"form-control", 'style'=>"width: 10em")) !!}
+        {!! Form::hidden("form_id", null, array('class'=>"form-control", 'style'=>"width: 10em")) !!}
 
         <div>
           {!! Form::label('selDueDate', 'Due Date', array('class' => 'col-md-2 control-label')) !!}
           {!! Form::text("due_date", null, array('class'=>"date-only form-control", 'data-format'=>"yyyy-MM-dd",'id'=>"selDueDate", 'style'=>"width: 10em")) !!}
         </div>
-        <div class="form-group">
+        <div class="form-group" style="display: none">
           {!! Form::label('chkUser', 'Name', array('class' => 'col-md-2 control-label')) !!}
           <div class="col-md-10">
             {!! Form::checkbox('users[]',-1, false,['id'=>'chkUser']) !!}

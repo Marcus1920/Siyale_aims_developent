@@ -32,7 +32,7 @@ class FormsRequest extends Request {
     	//$rules['field.*.name'] = "required|unique:forms_fields";
 			foreach ($this->request->get("field") as $key=>$val) {
 				//echo "field[$key]<pre>".print_r($val, 1)."</pre>";
-				$rules['field.'.$key.'.name'] = "required|unique:forms_fields,name,".(array_key_exists("id",$val)? $val['id']:"NULL").",id,form_id,".$_REQUEST['formId'].",table,".$table;//.",id";
+				/////$rules['field.'.$key.'.name'] = "required|unique:forms_fields,name,".(array_key_exists("id",$val)? $val['id']:"NULL").",id,form_id,".$_REQUEST['formId'].",table,".$table;//.",id";
 				//$rules['field['.$key.'][name]'] = "required|unique:forms_fields";
 				//$rules['field.name'] = "required";
 				//$rules['field.label'] = "required";

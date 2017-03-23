@@ -542,6 +542,7 @@
 @yield('footer')
 <div style="margin-top: -20px; margin-left: 5px; position: relative;">@include('version')</div>
 @include('partials.forms')
+@include('partials.ajax')
 @include('forms.data.form')
 @include('forms.data.view')
 @include('partials.refresh')
