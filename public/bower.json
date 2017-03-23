@@ -1,0 +1,35 @@
+{
+  "name": "Siyaleader DUT",
+  "version": "3",
+  "homepage": "dbn.siyaleader.net",
+  "authors": [
+    "Elie Ishimwe"
+  ],
+  "description": "Case Management Console",
+  "directory": "bower_components",
+  "keywords": [
+    "Case",
+    "Transnet"
+  ],
+  "license": "Apache",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "pages",
+    "index.html",
+    "/js"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.1",
+    "datatables": "~1.10.4",
+    "datatables-plugins": "~1.0.1",
+    "datatables-responsive": "~1.0.3",
+    "bootstrap-social": "~4.8.0",
+    "noty": "2.3.7",
+    "bootstrap-maxlength": "1.6.0",
+    "eonasdan-bootstrap-datetimepicker": "~4.7.14"
+  }
+}

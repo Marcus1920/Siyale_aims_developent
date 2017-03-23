@@ -1,0 +1,10 @@
+/vendor
+/public/bower_components/
+/node_modules
+Homestead.yaml
+.env
+.phpintel
+/public/files/
+/public/minutes/
+/public/images/poi/
+.idea/
