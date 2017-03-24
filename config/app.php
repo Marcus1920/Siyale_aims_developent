@@ -140,6 +140,7 @@ return [
         yajra\Datatables\DatatablesServiceProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
 
+				Arcanedev\LogViewer\LogViewerServiceProvider::class,
 				App\Providers\FormsServiceProvider::class,
 
         /*
