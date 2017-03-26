@@ -14,6 +14,7 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
 		, 'btnUpdateFields'=>"Update existing fields to match current database info"
 		, 'chkSystem'=>"Include system fields"
 		, 'chkOverwrite'=>"Overwrite any existing customizations"
+      , 'slug'=>"Leave blank to use default value"
 	);
 	//die("\$dbTables<pre>".print_r($dbTables,1)."</pre>");
 ?>
@@ -29,42 +30,48 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
             {!! Form::open(['url' => 'updateForm', 'method' => 'post', 'class' => 'form-horizontal', 'id'=>"updateCustomForm" ]) !!}
             {!! Form::hidden('formId',NULL,['id' => 'formId']) !!}
             {!! Form::hidden('id',Auth::user()->id,[]) !!}
-            <div style="border: 0px solid red; float: left; width: 50%">
+            <div style="border: 1px solid red; float: left; width: 50%">
             	<div class="form-group">
-                {!! Form::label('name', 'Name', array('class' => 'col-md-2 control-label')) !!}
-                <div class="col-md-10">
-                  {!! Form::text('name',(Request::old("name")?Request::old("name"):null),['class' => 'form-control input-sm','id' => 'name']) !!}
-                  @if ($errors->has('name')) <p class="help-block red">*{{ $errors->first('name') }}</p> @endif
+                    {!! Form::label('name', 'Name', array('class' => 'col-md-2 control-label')) !!}
+                    <div class="col-md-4">
+                      {!! Form::text('name',(Request::old("name")?Request::old("name"):null),['class' => 'form-control input-sm','id' => 'name']) !!}
+                      @if ($errors->has('name')) <p class="help-block red">*{{ $errors->first('name') }}</p> @endif
+                    </div>
+                    {!! Form::label('txtSlug', 'Acronym', array('class' => 'col-md-2 control-label')) !!}
+                    <div class="col-md-4">
+                        {!! Form::text('slug',(Request::old("slug")?Request::old("slug"):null),['class' => 'form-control input-sm','id' => 'txtSlug', 'title'=>"$tips[slug]"]) !!}
+                        @if ($errors->has('slug')) <p class="help-block red">*{{ $errors->first('slug') }}</p> @endif
+                    </div>
+                </div>
+                <div class="form-group">
+                    {!! Form::label('purpose', 'Purpose', array('class' => 'col-md-2 control-label')) !!}
+                    <div class="col-md-10">
+                      {!! Form::text('purpose',NULL,['class' => 'form-control input-sm','id' => 'purpose']) !!}
+                      @if ($errors->has('purpose')) <p class="help-block red">*{{ $errors->first('purpose') }}</p> @endif
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                {!! Form::label('purpose', 'Purpose', array('class' => 'col-md-2 control-label')) !!}
-                <div class="col-md-10">
-                  {!! Form::text('purpose',NULL,['class' => 'form-control input-sm','id' => 'purpose']) !!}
-                  @if ($errors->has('purpose')) <p class="help-block red">*{{ $errors->first('purpose') }}</p> @endif
-                </div>
-            </div>
-            </div>
-            <div style="border: 0px solid green; float: right; width: 50%">
-            	<div class="form-group">
+            <div style="border: 1px solid green; float: right; width: 50%">
+            	<div class="">
 		            {!! Form::label('selTable', 'Table', array('class' => 'col-md-3 control-label')) !!}
 		            <div class="col-md-9" >
 		            {!! Form::select('table',$dbTables, $dbTable != "" ? $dbTable : NULL,['class' => 'form-control select-sm','id' => 'selTable', 'style'=>"", 'onchange'=>"selectTable(this.options[this.selectedIndex].value, false)"]) !!}
 		          	</div>
-		          	</div>
 		          	<div class="form-group" style="clear: both">
-		          	<div class="col-md-3"></div>
-		          		{!! Form::label('chkSystem', 'System', array('class' => 'col-md-3 control-label', 'title'=>"$tips[chkSystem]", 'style'=>"float: left", 'data-placement'=>"bottom")) !!}
-	            		<div class="col-md-1">
-	            			{!! Form::checkbox('chkSystem',1, false,['id'=>'chkSystem']) !!}
-	            		</div>
-	            		{!! Form::label('chkOverwrite', 'Overwrite', array('class' => 'col-md-3 control-label', 'title'=>"$tips[chkOverwrite]", 'style'=>"float: left")) !!}
-	            		<div class="col-md-1">
-	            			{!! Form::checkbox('chkOverwrite',1, false,['id'=>'chkOverwrite']) !!}
-	            		</div>
-	            	</div>
-	          </div>
-	          <hr/>
+                        <div class="">
+                            {!! Form::label('chkSystem', 'System', array('class' => 'col-md-3 control-label', 'title'=>"$tips[chkSystem]", 'style'=>"float: left", 'data-placement'=>"bottom")) !!}
+                            <div class="col-md-1">
+                                {!! Form::checkbox('chkSystem',1, false,['id'=>'chkSystem']) !!}
+                            </div>
+                            {!! Form::label('chkOverwrite', 'Overwrite', array('class' => 'col-md-3 control-label', 'title'=>"$tips[chkOverwrite]", 'style'=>"float: left")) !!}
+                            <div class="col-md-1">
+                                {!! Form::checkbox('chkOverwrite',1, false,['id'=>'chkOverwrite']) !!}
+                            </div>
+                        </div>
+	                </div>
+                </div>
+            </div>
+            <hr/>
             <div style="clear: both; white-space: nowrap">
             	<h3 class="block-title">Fields</h3>
 	            <a class="btn btn-sm" data-toggle="modal" data-target=".modalAddField" id="btnAddField" title="{{$tips['btnAddField']}}">Add Field</a>
@@ -127,6 +134,7 @@ function launchUpdateFormModal(id, clear) {
 			if(data[0] !== null) {
 				$("#modalEditForm #name").val(data[0].name);
 				$("#modalEditForm #purpose").val(data[0].purpose);
+				$("#modalEditForm #txtSlug").val(data[0].slug);
         if (data[0].table) $("#selTable").val(data[0].table);
         else $("#selTable").val("");
 			}

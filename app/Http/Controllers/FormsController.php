@@ -249,16 +249,23 @@ class FormsController extends Controller {
   
   public function store(FormsRequest $request) {
 		$txtDebug = "FormsController->store(\$request)";
-		if ($request) $txtDebug .= " \$request - ".print_r($request->input(),1);
+		if ($request) $req = $request->all();
+		if ($req['slug'] == "") $req['slug'] = strtolower( preg_replace('/\s/','-', $req['name']) );
+		$txtDebug .= " \$req A - ".print_r($req,1);
   	$form             = new Form();
-		$form->name       = $request['name'];
+		/*$form->name       = $request['name'];
 		$form->slug       = $request['slug'];
 		$form->purpose   = $request['purpose'];
 		$form->table = $request['table'];
-		$form->created_by = \Auth::user()->id;
+		$form->created_by = \Auth::user()->id;*/
+		if (!array_key_exists("created_by", $req)) $req['created_by'] = \Auth::user()->id;
+		$txtDebug .= " \$req B - ".print_r($req,1);
+		$form->fill($req);
 		$txtDebug .= "\n  \$form - ".print_r($form->toArray(), 1);
 		//die("<pre>{$txtDebug}</pre>");
+		\Log::info($txtDebug);
 		$saved = $form->save();
+		\Log::info("  \$saved - {$saved}");
 		if ($saved) {
 			\Session::flash('success', $request['name'].' form has been successfully added!');
 			return redirect()->back();
@@ -285,6 +292,9 @@ class FormsController extends Controller {
 			//$fields = $request['field'];
 		}
 		//die("<pre>{$txtDebug}</pre>");
+		if ($req['slug'] == "") $req['slug'] = strtolower( preg_replace('/\s/','-', $req['name']) );
+		if (!array_key_exists("updated_by", $req)) $req['updated_by'] = \Auth::user()->id;
+		//if (!array_key_exists("updated_at", $req)) $req['updated_at'] = date("Y-m-d H:i:s");
 		if (array_key_exists("field", $req)) {
 		foreach($req['field'] AS $i=>$f) {
 			$joiner = array_key_exists("joiner", $f['opts']) ? $f['opts']['joiner'] : "line";
@@ -296,14 +306,20 @@ class FormsController extends Controller {
 		}
 
   	$form               = Form::where('id',$request['formId'])->first();
-    $form->name         = $request['name'];
+    /*$form->name         = $request['name'];
     $form->purpose   = $request['purpose'];
 		$form->table = $request['table'];
-    $form->updated_by   = \Auth::user()->id;
+    $form->updated_by   = \Auth::user()->id;*/
     //$txtDebug .= "  \$request - ".print_r($request->all(),1)."";
-		///die("<pre>{$txtDebug}</pre>");
+		$txtDebug .= "\n  \$form A - ".print_r($form->toArray(), 1);
+		$form->fill($req);
+		$txtDebug .= "\n  \$form B - ".print_r($form->toArray(), 1);
+		//die("<pre>{$txtDebug}</pre>");
+		\Log::info($txtDebug);
     $saved = $form->save();
+		\Log::info("  \$saved - {$saved}");
     if (array_key_exists("field", $req)) $saved = $form->saveFields($req, $this);
+		\Log::info("  \$saved - {$saved}");
 		//die("<pre>{$txtDebug}</pre>");
     //die("<pre>FormsController->update(\$request) \$request - ".print_r($request->all(),1)."</pre>");
     //\Session::flash('success', "REQUEST<pre>".print_r($request, 1)."</pre>");
