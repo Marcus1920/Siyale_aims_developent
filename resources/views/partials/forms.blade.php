@@ -68,7 +68,8 @@
   }
 
   function doAction(el, id, extra) {
-    console.log("doAction(el, id, extra) id - ",id,", extra - ",extra,", el - ",el);
+		if (APP_DEBUG > 0) console.log("doAction(el, id, extra) id - ",id,", extra - ",extra);
+    if (APP_DEBUG > 2) console.log("  el - ",el);
     if (typeof extra == "undefined") extra = {};
     var action = "";
     var idForm = -1;
@@ -79,7 +80,7 @@
     if (extra['what']) what = extra['what'];
     if (extra['form_id']) idForm = extra['form_id'];
     if (extra['assigned_id']) assigned_id = extra['assigned_id'];
-    console.log(", action - ",action,", what - ",what);
+    if (APP_DEBUG > 2) console.log(", action - ",action,", what - ",what);
     if (what == "form") {
       if (action == "add") {
         $("#addNewForm").reset();
@@ -127,21 +128,21 @@
   }
 
   function getRelatedItems(field, el, val2) {
-    console.log("getRelatedItems(field, el, val2) field - ",field,", val2 - ",val2,", el - ", el);
+    if (APP_DEBUG > 0) console.log("getRelatedItems(field, el, val2) field - ",field,", val2 - ",val2,", el - ", el);
     var name = "";
     if (field['name']) name =field.name.replace(/_.*/,"");
     var opts = null;
     if (field['options']) opts = JSON.parse(field.options);
     else if (field['display']) opts = field;
     var table = opts.table;
-    console.log("  name - ",name,", opts - ",opts);
+    if (APP_DEBUG > 2) console.log("  name - ",name,", opts - ",opts);
     $.ajax({
 			async: true,
       type    :"GET",
       dataType:"json",
       url     :"forms/database/data/"+ table + "",
       success :function(data) {
-        console.log("  data - ", data);
+        if (APP_DEBUG > 1) console.log("  data - ", data);
         if (data) for (var i = 0; i < data.length; i++) {
           var sel = "";
           var text = "";
@@ -152,7 +153,7 @@
           if (opts.display) for (var oi = 0; oi < opts.display.length; oi++) text += data[i][opts.display[oi]] + " ";
           text = text.replace(/([^\s]+)\s+$/, "$1");
           $(el).append('<option value="'+val+'" '+sel+'>'+text+'</option>');
-          console.log("    "+i+", val - ",val,", text - ",text);
+          if (APP_DEBUG > 2) console.log("    "+i+", val - ",val,", text - ",text);
         }
       }
     });
@@ -162,9 +163,9 @@
     if (typeof ajax == "undefined" || ajax == null) ajax = 0;
     if (typeof mode == "undefined" || mode == null) mode = "dataform";
     //console.log("launchFormModal(id, edit) id - ",id,", edit - ",edit);
-    console.log("launchModalFormData(id, form_id) id - ",id,", form_id - ",form_id,", it - ", it,", el - ",el,", ajax - ",ajax,", mode - ",mode);
+		if (APP_DEBUG > 0) console.log("launchModalFormData(id, form_id) id - ",id,", form_id - ",form_id,", it - ", it,", el - ",el,", ajax - ",ajax,", mode - ",mode);
     //if (it) it.func();
-    console.log("  modal-body - ", $(el).parentsUntil(".modal"));
+		if (APP_DEBUG > 2) console.log("  modal-body - ", $(el).parentsUntil(".modal"));
     $(el).parentsUntil(".modal").last().find("[name='id']").each(function(i) {
       console.log("  id.each(i) i - ",i,", this - ",this,", val - ",this.value);
     });
@@ -190,7 +191,7 @@
     else if (mode == "previewform") theForm = $("#modalPreviewForm");*/
     theForm = $("#modalDataForm");
     theBody = theForm.find(".modal-body");
-    console.log("  theForm - ",theForm,", .modal-body - ",theBody);
+		if (APP_DEBUG > 2) console.log("  theForm - ",theForm,", .modal-body - ",theBody);
     var theURL = "/forms/";
     if (mode == "dataform") theURL += "data/";
     theURL += id;
@@ -201,7 +202,7 @@
       dataType:"json",
       url     :theURL,
       success :function(data) {
-        console.log("data - ", data);
+        if (APP_DEBUG > 1) console.log("data - ", data);
         if (theForm != null) {
           if (mode == "previewform") {
             $(theForm).find(".txtPreview").css("display", "inherit");
@@ -232,7 +233,7 @@
              //lbl.text(data[1][i].label);
              //lbl.attr("class", "col-md-2 control-label");*/
             var opts = JSON.parse(data[1][i].options);
-            console.log("  data[1]["+i+"] - ", data[1][i],", opts - ", opts);
+            if (APP_DEBUG > 1) console.log("  data[1]["+i+"] - ", data[1][i],", opts - ", opts);
             var group = document.createElement("div");
             group.className = "form-group clearfix";
             var lbl = document.createElement("label");
@@ -399,13 +400,13 @@
               else if (opts.max) title += " < "+opts.max;
               if (data[1][i].type == "text") title += " characters";
             }
-            console.log("  Using name - ",name);
+            if (APP_DEBUG > 1) console.log("  Using name - ",name);
             $(input).attr("title", title);
             $(input).attr("data-original-title", title);
             if (title != "") $(input).tooltip({placement: "right", html: true, animation: true, template: '<div class="tooltip" role="tooltip" style="white-space: pre-wrap"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="background-color: rgba(128,128,128,0.75); "></div></div>',});
             cnt[baseName]++;
           }
-          console.log("  cnt - ",cnt);
+          if (APP_DEBUG > 1) console.log("  cnt - ",cnt);
         }
         //updateFields(data[1]);
 
@@ -420,7 +421,7 @@
         //if ($("#modalDataForm .modal-body").height() > height) $("#modalDataForm .modal-body").height( height );
 
         if (theForm != null) {
-          console.log("  height - ", height, ", theForm .modal-body height - ", theForm.find(".modal-body").height());
+					if (APP_DEBUG > 2) console.log("  height - ", height, ", theForm .modal-body height - ", theForm.find(".modal-body").height());
           if (theForm.find(".modal-body").height() > height) theForm.find(".modal-body").height( height );
         }
 
@@ -460,14 +461,14 @@
   }
 
   function launchModalDataView(id, form_id) {
-    console.log("launchModalDataView(id, form_id) id - ",id,", form_id - ",form_id);
+		if (APP_DEBUG > 0) console.log("launchModalDataView(id, form_id) id - ",id,", form_id - ",form_id);
     $("#modalDataView .modal-body").empty();
     $.ajax({
       type    :"GET",
       dataType:"json",
       url     :"{!! url('/forms/data/"+ id + "/"+form_id+"')!!}",
       success :function(data) {
-        console.log("data - ", data);
+				if (APP_DEBUG > 1) console.log("data - ", data);
         if (data[0] !== null) {
           $("#modalDataView .modal-title").text(data[0].name);
           $("#modalDataView .modal-header i").remove();
@@ -477,7 +478,7 @@
         if (data[1] !== null) {
           for (var i = 0; i < data[1].length; i++) {
             var opts = JSON.parse(data[1][i].options);
-            console.log("    opts - ", opts);
+						if (APP_DEBUG > 2) console.log("    opts - ", opts);
             var wrapper = document.createElement('div');
             wrapper.style.clear = "both";
             wrapper.style.padding = "10px 0";
@@ -509,7 +510,7 @@
               if (val == 0) val = opts[false];
               else if (val == 1) val = opts[true];
             }
-            console.log("  val - ", val);
+						if (APP_DEBUG > 0) console.log("  val - ", val);
             if (Array.prototype.isPrototypeOf(val)) {
               if (data[1][i].type == "rel") {
                 $(wVal).append(val[1]);
@@ -662,9 +663,9 @@
 
   function updateFields(fields) {
     var form = $("#modalDataForm").first();
-    console.log("updateFields(fields, form) fields - ",fields,", form - ", form);
+		if (APP_DEBUG > 0) console.log("updateFields(fields, form) fields - ",fields,", form - ", form);
     $(form).find("[name^='data']").each(function(i, el) {
-      console.log("  data["+i+"] el: type - ",el.type,", ", el);
+			if (APP_DEBUG > 2) console.log("  data["+i+"] el: type - ",el.type,", ", el);
     });
   }
 

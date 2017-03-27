@@ -71,8 +71,8 @@ function selectForm(el) {
 		form_id = el.options[el.selectedIndex].value;
 		form_name = el.options[el.selectedIndex].text;
 	}
-	console.log("selectForm(el) form_id - ",form_id,", form_name - ",form_name,", el - ", el);
-	console.log("iii - is ", Object.prototype.isPrototypeOf(el));
+	if (APP_DEBUG > 0) console.log("selectForm(el) form_id - ",form_id,", form_name - ",form_name,", el - ", el);
+	if (APP_DEBUG > 2) console.log("iii - is ", Object.prototype.isPrototypeOf(el));
 	form_name = form_name.replace(/ \(\d+\)/, "");
 	/////if (form_id != -1) $("input[type='search']").val(form_name);
 	//else $("input[type='search']").val("");
@@ -138,13 +138,13 @@ $(function() {
     		return false;
 			}*/
     );
-    
+
     $("#selForm").on("change", function(e) { selectForm(e.currentTarget); });
-    /*$("#selForm").on("change", function(e) { 
+    /*$("#selForm").on("change", function(e) {
     	var form_id = e.currentTarget.options[e.currentTarget.selectedIndex].value;
 			var form_name = e.currentTarget.options[e.currentTarget.selectedIndex].text;
 			var oForm = {id: form_id, name: form_name}
-    	selectForm(oForm); 
+    	selectForm(oForm);
     });
     */
     $("#formsTable_wrapper .row").first().css("margin-top", "-4.75em");
@@ -156,7 +156,7 @@ $(function() {
     	//selectForm("{{ $form_id }}");
     	oForm.draw();
     @endif
-    
+
     $("#btnAdd").on("click", btnAdd);
 });
 </script>

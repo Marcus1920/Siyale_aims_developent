@@ -94,7 +94,7 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
             	@endforeach
             @endif
             </div>
-            
+
             <div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
                     <button type="submit" id='submitUpdateCustomForm' type="button" class="btn btn-sm">Save Changes</button>
@@ -117,7 +117,8 @@ var form_id =-1;
 
 
 function launchUpdateFormModal(id, clear) {
-	console.log("launchUpdateFormModal(id) id - "+id+", clear - ",clear,", fields - ",$("#formFields .fieldTemplate").length,", this - ",this);
+	console.log("launchUpdateFormModal(id) id - "+id+", clear - ",clear,", fields - ",$("#formFields .fieldTemplate").length);
+	if (APP_DEBUG > 2) console.log(", this - ",this);
 	//$(".modalAJAX").modal({ escapeClose: false, clickClose: true, showClose: true });
 	$(".modal-body #formId").val(id);
 	//$("#formFields").remove(".fieldTemplate");
@@ -130,7 +131,7 @@ function launchUpdateFormModal(id, clear) {
 		dataType:"json",
 		url     :"{!! url('/forms/"+ id + "')!!}",
 		success :function(data) {
-			console.log("data - ", data);
+          if (APP_DEBUG > 2) console.log("data - ", data);
 			if(data[0] !== null) {
 				$("#modalEditForm #name").val(data[0].name);
 				$("#modalEditForm #purpose").val(data[0].purpose);
@@ -146,7 +147,7 @@ function launchUpdateFormModal(id, clear) {
 			  var ii = 0;
 				for (var i = 0; i < data[1].length; i++) {
 				  var orderfloor = Math.floor(data[1][i]['order']);
-				  console.log("  Adding field: i - ",i,", field - ",data[1][i],", order floor - ",orderfloor," = order = ",(orderfloor == data[1][i]['order']));
+                  if (APP_DEBUG > 2) console.log("  Adding field: i - ",i,", field - ",data[1][i],", order floor - ",orderfloor," = order = ",(orderfloor == data[1][i]['order']));
 					if (data[1][i]['order'] == orderfloor) {
 					  addField(ii, data[1][i]);
 					  ii++;
@@ -155,7 +156,7 @@ function launchUpdateFormModal(id, clear) {
             notadded.push(i);
           }
 				}
-				console.log("  not added - ",notadded);
+							if (APP_DEBUG > 2) console.log("  not added - ",notadded);
         for (var i = 0; i < notadded.length; i++) {
           $("#formFields .fieldTemplate").each(function(i2, el) {
             var orderfloor = Math.floor(data[1][notadded[i]]['order']);
@@ -191,7 +192,7 @@ function launchUpdateFormModal(id, clear) {
 				//alert("chkSystem.changed() tbl - "+tbl);
 				if (tbl != "0") selectTable(tbl);
 			});
-			
+
 			//console.log("selTable - ",$("#selTable"));
 			if (data[1].length > 0) for (var i = 0; i < data[1].length; i++) {
 				for (var i2 = 0; i2 < $("#selTable").get(0).options.length; i2++) {
@@ -209,14 +210,14 @@ function launchUpdateFormModal(id, clear) {
 			$("a[title!=''],input[title!=''],label[title!='']").tooltip( {placement:"top", track: true } );
 			var height = 0;
 			$(".form-group").each( function(index) { height += $(this).height(); } );
-			console.log("  height after adding - ", height);
+          if (APP_DEBUG > 2) console.log("  height after adding - ", height);
 			$("#formFields .form-group").each( function(index) { height -= $(this).height(); } );
 			height = $(window).get(0).innerHeight - 300;
-			console.log("Setting height: window.height - ", $(window).height(), ", form-group height - ",height);
+          if (APP_DEBUG > 2) console.log("Setting height: window.height - ", $(window).height(), ", form-group height - ",height);
 			$("#formFields").height( height );
 			updateFieldss();
 		}
-	});	
+	});
 }
 
 function addChoice(template, val, index) {
@@ -240,15 +241,16 @@ function addChoice(template, val, index) {
 }
 
 function addChoiceRel(template, val, display) {
-	console.log("addChoiceRel(template, val) template - ",template,", val - ",val,", display - ",display);
-	var displayFields = $(template).find(".displayFields");
+	if (APP_DEBUG > 0) console.log("addChoiceRel(template, val) display - ",display);
+	if (APP_DEBUG > 2) console.log(", template - ",template,", val - ",val);
+    var displayFields = $(template).find(".displayFields");
 	var wrapper = document.createElement("div");
 	var label = document.createElement("label");
 	var choice = document.createElement("input");
 	$(choice).css("opacity", "1");
 	choice.name = "field[][opts][rel][display][]";
 	choice.type = "checkbox";
-	
+
 	label.className = "col-md-4 control-label";
 	if (val) {
 		choice.value = val.name;
@@ -264,14 +266,14 @@ function addChoiceRel(template, val, display) {
 	wrapper.className = "clearfix";
 	$(wrapper).css("clear","both");
 	wrapper.appendChild(choice);
-	console.log("  label - ", label);
+	if (APP_DEBUG > 2) console.log("  label - ", label);
 	wrapper.appendChild(label);
 	displayFields.append(wrapper);
 	updateField(template);
 }
 
 function addField(index, vals) {
-	console.log("addField(index, vals) index - ",index,", vals - ", vals);
+	if (APP_DEBUG > 0) console.log("addField(index, vals) index - ",index,", vals - ", vals);
 	cntFields++;
 	/*$("#cntFields").text(cntFields);*/
 	var template = $(".fieldTemplate").clone().get(0);
@@ -281,9 +283,9 @@ function addField(index, vals) {
 	////$(template).find("#fieldType").removeAttr("disabled");
 	///template.style.display = "block";
 	$("#formFields").append(template);
-	
+
 	template.style.display = "block";
-	
+
 	///$(template).on("mousedown", startDrag);
 	/////$(template).find(".options").find("[class^='opts']").hide();
 	updateField(template, vals, index);
@@ -299,19 +301,19 @@ function addField(index, vals) {
 	$(template).find("input").on("ifClicked", function(ev) {
 		console.log("Clicked");
 	});*/
-	
+
 	/*$(template).find("input").iCheck("destroy");
 	$(template).find("input").iCheck({
 		    checkboxClass: 'icheckbox_minimal',
 		    radioClass: 'iradio_minimal',
 		    increaseArea: '50%' // optional
 	});*/
-	
+
 	//$(template).find("input").iCheck("check");
 	//$(template).find("input").iCheck("destroy");
 	//$(template).find("input").iCheck("enable");
 	//$(template).find("input").iCheck("update");
-	
+
 	//$(template).find("a[title!=''],input[title!=''],label[title!='']").tooltip( {placement:"right", track: true } );
 	/*$(template).find("[id^='fieldType']").on("change", function(ev) {
 		console.log("fieldType.change: ev - ", ev, ", this - ",this);
@@ -335,7 +337,7 @@ function addField(index, vals) {
  * @param vals
  */
 function addSubField(parent, index, vals) {
-  console.log("addSubField(field,index, vals) index - ",index,", vals - ", vals,",field - ",parent);
+  if (APP_DEBUG > 0) console.log("addSubField(field,index, vals) index - ",index,", vals - ", vals,",field - ",parent);
   cntSubFields++;
   /*var indexMain = -1;
   if (index) indexMain*/
@@ -348,7 +350,7 @@ function addSubField(parent, index, vals) {
     //vals['type'] $(template).find("[id^='fieldType']").val()
     vals['type'] = "";
   }
-  console.log("  index - ",index,", vals - ",vals);
+	if (APP_DEBUG > 2) console.log("  index - ",index,", vals - ",vals);
   var template = $(".fieldTemplate").clone().get(0);
   $(parent).find(".wInputs").append(template);
   $(template).find(".addsub").remove();
@@ -437,27 +439,27 @@ function deleteField(field) {
 }
 
 function getFieldIndex(template, container) {
-  console.log("getFieldIndex(template) template - ", template);
-	console.log("  Searching for index");
+	if (APP_DEBUG > 0) console.log("getFieldIndex(template) template - ", template);
+	if (APP_DEBUG > 2) console.log("  Searching for index");
 	//var tt = $(template).closest('[name|="field"]');
 	var fieldTemplate = $(template).parents('.fieldTemplate').get(0);
-	console.log("  fieldTemplate - ",fieldTemplate);
+	if (APP_DEBUG > 2) console.log("  fieldTemplate - ",fieldTemplate);
 	var field = $(fieldTemplate).find('[name*="field"]').get(0);
-	console.log("  field - ",field);
+	if (APP_DEBUG > 2) console.log("  field - ",field);
 	var index = -1;
 	if (typeof field != "undefined") {
 		var regex = /field\[(\d+)\]/g.exec(field.name);
-		console.log("  regex - ",regex);
+      if (APP_DEBUG > 2) console.log("  regex - ",regex);
 		index = regex[1];
 	}
-  console.log("  index - ",index);
+	if (APP_DEBUG > 2) console.log("  index - ",index);
 	if (index == -1) {
 	  index = $("#formFields .fieldTemplate").length;
       /*$("#formFields .fieldTemplate").each(function(i,el) {
         console.log("    Checking field ",i);
       });*/
   }
-  console.log("  returning ",index);
+	if (APP_DEBUG > 2) console.log("  returning ",index);
 	return index;
 }
 
@@ -466,11 +468,11 @@ function getFieldIndexSub(template) {
 }
 
 function orderDown(e) {
-	
+
 }
 
 function orderUp(e) {
-	
+
 }
 
 function reorder(dir, el) {
@@ -495,7 +497,7 @@ function reorder(dir, el) {
 			console.log("  GotCHA! el2 - ",el2);
 		}
 	});
-	
+
 	if (el2 != null) {
       var order = [];
 
@@ -514,7 +516,7 @@ function selectTable(name, rel, template, opts, refresh, index) {
 	var form_id = $(".modal-body #formId").val();
 	//var index = $(template).closest('.fieldTemplate');
   var tStart = new Date().getTime();
-	console.log("selectTable(name, rel) (",tStart,") form_id - "+form_id+", index - "+index+", name - "+name+", rel - "+rel+", opts - ",opts,", template - ",template,", chkSystem - "+chkSystem);
+	if (APP_DEBUG > 0) console.log("selectTable(name, rel) (",tStart,") form_id - "+form_id+", index - "+index+", name - "+name+", rel - "+rel+", opts - ",opts,", template - ",template,", chkSystem - "+chkSystem);
 	if (typeof index == "undefined") {
 		index = getFieldIndex(template);
 	}
@@ -532,8 +534,8 @@ function selectTable(name, rel, template, opts, refresh, index) {
 		success :function(data) {
           var tSuccess = new Date().getTime();
           var tSince = tSuccess - tStart;
-			console.log("selectTable() SUCCESS (",tSuccess,", ",tSince,"ms since ",tStart,"), name - ",name);
-			console.log("data - ", data);
+          if (APP_DEBUG > 1) console.log("selectTable() SUCCESS (",tSuccess,", ",tSince,"ms since ",tStart,"), name - ",name);
+          if (APP_DEBUG > 1) console.log("data - ", data);
 			if(data !== null) {
 				var systemTables = ["active","created_at", "created_by", "id","remember_token", "updated_at", "updated_by"];
 				var i2 = 0;
@@ -560,15 +562,15 @@ function selectTable(name, rel, template, opts, refresh, index) {
 								}
 							});
 							if (el) {
-								console.log("  Updating for ",col);
+                              if (APP_DEBUG > 1) console.log("  Updating for ",col);
 								updateField(el, col, i2);
 							} else {
-								console.log("  Adding for ",col);
+                              if (APP_DEBUG > 1) console.log("  Adding for ",col);
 								addField(i, col);
 							}
 						} else {
 							if (rel) {
-								console.log("  Adding choice for ",col);
+                              if (APP_DEBUG > 1) console.log("  Adding choice for ",col);
 								if (opts) addChoiceRel(template, col, opts.display);
 								else addChoiceRel(template, col);
 							}
@@ -579,10 +581,9 @@ function selectTable(name, rel, template, opts, refresh, index) {
 				}
 				updateFieldss();
 			}
-			console.log("WtF!? A");
             var tEnd = new Date().getTime();
             tSince = tEnd - tStart;
-            console.log("selectTable() SUCCESS END (",tEnd,", ",tSince,"ms since ",tStart,"), name - ",name);
+          if (APP_DEBUG > 1) console.log("selectTable() SUCCESS END (",tEnd,", ",tSince,"ms since ",tStart,"), name - ",name);
 			///updateField(template, null, index);
           $(template).find(".wLoader").css("display", "none");
 		}
@@ -591,7 +592,7 @@ function selectTable(name, rel, template, opts, refresh, index) {
 
 function selectType(template, selection) {
 	///console.log("selectType(template, selection) template - ", template,", selection - ", selection);
-	console.log("selectType(template, selection) selection - ", selection);
+	if (APP_DEBUG > 0) console.log("selectType(template, selection) selection - ", selection);
 	$(template).find(".options").find("[class^='opts']").hide();
 	///$(template).find(".options").find("[class^='opts']").show();
 	if (selection != "") {
@@ -632,12 +633,12 @@ function swapElements(obj1, obj2) {
 function updateField(template, vals, index) {
 	var tStart = new Date().getTime();
 	//console.log("updateField(template, vals, index) vals - ",vals,",index - ", index,", template - ",template);
-	console.log("updateField(template, vals, index) vals - ",vals,",index - ", index);
+	if (APP_DEBUG > 0) console.log("updateField(template, vals, index) vals - ",vals,",index - ", index);
 	if (template == null) return;
 	if (typeof index == "undefined") {
 		index = getFieldIndex(template);
 	}
-	console.log("  index - ",index);
+	if (APP_DEBUG > 2) console.log("  index - ",index);
 	if (typeof index != "undefined") $(template).find("[name*='field']").each(function(i2, el2) {
 		el2.name = el2.name.replace(/\[\d*\]/, "["+index+"]");
 		if (el2.id != "") el2.id = el2.id.replace(/\d*$/, index);
@@ -667,7 +668,7 @@ function updateField(template, vals, index) {
             addChoice(template);
         });
 	}
-	console.log("  updateField since A: "+(new Date().getTime()-tStart)+"ms");
+	if (APP_DEBUG > 1) console.log("  updateField since A: "+(new Date().getTime()-tStart)+"ms");
 	if (vals) {
 		if (vals.id) $(template).find("[id^=fieldId]").val(vals.id);
 		if (vals.name) $(template).find("[id^=fieldName]").val(vals.name);
@@ -683,12 +684,12 @@ function updateField(template, vals, index) {
 		if (vals.options) {
 			var opts = vals.options;
 			if (!Object.prototype.isPrototypeOf(opts)) opts = JSON.parse(opts);
-			console.log("  Updating options - ",vals.options," ("+vals.options.length+"), opts - ",opts," ("+opts.length+")");
+          if (APP_DEBUG > 2) console.log("  Updating options - ",vals.options," ("+vals.options.length+"), opts - ",opts," ("+opts.length+")");
 			for (var prop in opts) {
 				var f = $(template).find("[name$='[opts]["+vals.type+"]["+prop+"]']");
-				console.log("    f (before) - ", f);
+              if (APP_DEBUG > 3) console.log("    f (before) - ", f);
 				if (f.length == 1) {
-					console.log("    f.val (before) - ", f.val());
+					if (APP_DEBUG > 3) console.log("    f.val (before) - ", f.val());
 					if ((f[0].type == "checkbox" || f[0].type == "radio") && f[0].value == opts[prop]) {
 						console.log("    Check it");
 						//f.iCheck("destroy");
@@ -698,7 +699,7 @@ function updateField(template, vals, index) {
 						f.iCheck("update");
 					}
 					else f.val(opts[prop]);
-					console.log("    f.val (after) - ", f.val());
+                  if (APP_DEBUG > 3) console.log("    f.val (after) - ", f.val());
 				}
 				else {
 					for (var fi = 0; fi < f.length; fi++) {
@@ -719,40 +720,41 @@ function updateField(template, vals, index) {
 	} else {
 		selectType(template, "");
     }
-	console.log("  updateField since Ba: "+(new Date().getTime()-tStart)+"ms");
+	if (APP_DEBUG > 1) console.log("  updateField since Ba: "+(new Date().getTime()-tStart)+"ms");
 	$(template).find("input").iCheck("destroy");
 	$(template).find("input[type='radio']").iCheck({
 		    checkboxClass: 'icheckbox_minimal',
 		    radioClass: 'iradio_minimal'
 		    , increaseArea: '20%'
 	});
-	console.log("  updateField since C: "+(new Date().getTime()-tStart)+"ms");
+	if (APP_DEBUG > 1) console.log("  updateField since C: "+(new Date().getTime()-tStart)+"ms");
 	var toTip = $(template).find("[title!='']");
 	toTip = $(template).find("[data-original-title!='']");
-	console.log("  Tipping "+toTip.length+" elements");
+	if (APP_DEBUG > 2) console.log("  Tipping "+toTip.length+" elements, APP_DEBUG - ",APP_DEBUG," > 2 - ", (APP_DEBUG > 2));
 	//////console.log("toTip - ",toTip);
-	console.log("  updateField since D: "+(new Date().getTime()-tStart)+"ms");
+	if (APP_DEBUG > 1) console.log("  updateField since D: "+(new Date().getTime()-tStart)+"ms");
 	toTip.each(function(i) {
       if (typeof $(toTip[i]).attr("data-original-title") == "undefined") return;
-		if (typeof $(toTip[i]).attr("data-original-title") != "undefined") console.log("    Tipping ",i," - ",$(toTip[i]).attr("data-original-title"));
+      //console.log("  In tip loop, APP_DEBUG - ",APP_DEBUG," > 2 - ", (APP_DEBUG > 2));
+		if (APP_DEBUG > 3) console.log("    Tipping ",i," - ",$(toTip[i]).attr("data-original-title"));
 		$(this).tooltip("destroy");
 		$(this).tooltip( {placement:"right", track: true } );
 	});
-	console.log("  updateField since Z: "+(new Date().getTime()-tStart)+"ms");
+	if (APP_DEBUG > 1) console.log("  updateField since Z: "+(new Date().getTime()-tStart)+"ms");
   $(template).find("[id^='fieldType']").on("change", function(ev) {
     console.log("fieldType.change: ev - ", ev, ", this - ",this);
     selectType(template, this.options[this.selectedIndex].value);
   });
     var tEnd = new Date().getTime();
     var tTotal = tEnd - tStart;
-    console.log("  updateField end: "+tTotal+"ms");
+	if (APP_DEBUG > 0) console.log("  updateField end: "+tTotal+"ms");
 }
 
 function updateFieldss() {
-	console.log("updateFieldss() this - ",this);
+	if (APP_DEBUG > 0) console.log("updateFieldss() this - ",this);
 	var fields = $("#formFields").find(".fieldTemplate");
 	fields.each(function(index) {
-		console.log("Updating field "+index+" of "+fields.length+", ordering buttons - ",$(this).find(".sort_asc").length);
+			if (APP_DEBUG > 2) console.log("Updating field "+index+" of "+fields.length+", ordering buttons - ",$(this).find(".sort_asc").length);
 		/*if (index == 0) $(this).find(".sort_asc").css("visibility","hidden");
 		else $(this).find(".sort_asc").css("visibility","visible");
 		if (index > 0 && index == fields.length-1) $(this).find(".sort_desc").css("visibility","hidden");
@@ -762,7 +764,7 @@ function updateFieldss() {
         else $(this).find(".sort_asc").css("visibility","visible");
 		//$(this).find("[id^=fieldOrder]").val(index);
 	});
-	
+
 	fields.each(function(i, el) {
 		/////$(el).iCheck("destroy");
 		/////console.log("  fields.each(i, el) i - ",i,", el - ",el);
@@ -789,7 +791,7 @@ function updateFieldss() {
 		});
 		var selType = $(el).find("[id^='fieldType']").get(0);
 		///selectType(el, selType.options[selType.selectedIndex].value);
-console.log("Adding click handler to btnAddChoice");
+			if (APP_DEBUG > 2) console.log("Adding click handler to btnAddChoice");
 		$(el).find("[id^='btnAddChoice']").on("click", function(ev) {
 			addChoice(el);
 		});
@@ -829,22 +831,22 @@ $(document).ready(function() {
 		// selectTable(name, rel, template, opts, refresh, index)
 		selectTable(table, false, null, null, true);
 	});
-	
+
 	//$("input[type=checkbox]").iCheck("destroy");
 	////$("input").iCheck("destroy");
-	
-	$("#submitUpdateCustomForm").on("click", function (ev) { 
+
+	$("#submitUpdateCustomForm").on("click", function (ev) {
 		ev.preventDefault();
 		if (checkForm()) $("#updateCustomForm").submit();
 	});
-	
+
 	$(document).on("ifChecked", function(ev) {
 		console.log("ifChecked(ev) ev - ",ev);
 	});
 	$(document).on("ifUnchecked", function(ev) {
 		console.log("ifUnchecked(ev) ev - ",ev);
 	});
-	
+
 });
 </script>
 
