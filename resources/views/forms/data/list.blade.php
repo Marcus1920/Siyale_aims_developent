@@ -59,7 +59,7 @@ function btnAdd(ev) {
 	console.log("btnAdd() form_id - "+form_id);
 	//doAction("edit", form_id);
 	$(".modalDataForm").modal();
-	launchDataModal(-1, form_id);
+	launchModalFormData(-1, form_id);
 }
 
 

@@ -83,8 +83,10 @@
 			//die("<pre>{$txtDebug}</pre>");
 			if ($id != -1) {
 
-				if ($form_id == -1) $form = Form::where('id',$form_id)->first()->toArray();
+				if ($form_id == -1) $form = (new Form());
 				else $form = Form::where('id',$form_id)->first()->toArray();
+				$txtDebug .= "\n  \$form - ".print_r($form, 1)."";
+				//die("<pre>{$txtDebug}</pre>");
 				if ($form['table']) {
 					$formdata = new FormsData(array('form_id'=>$form_id));
 					$formdata = $formdata->toArray();
@@ -237,7 +239,7 @@
 
   		
   		$txtDebug .= "\n  \$data - ".print_r($data,1);
-  		//$txtDebug .= "\n  \$formdata - ".print_r($formdata,1);
+  		$txtDebug .= "\n  \$formdata - ".print_r($formdata,1);
   		//
   		$txtDebug .= "\n  \$fields - ".print_r($fields, 1)."";
   		

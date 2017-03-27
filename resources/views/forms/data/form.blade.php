@@ -8,6 +8,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3 class="txtPreview" style="color: #20FF26; display: none; float: right; font-size: 1.5em; margin: 0; padding: 0 1.5em;">PREVIEW</h3>
                 <h4 class="modal-title"></h4>
             </div>
             <div class="modal-body">
@@ -19,10 +20,10 @@
             	<div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
                     <!--<button type="submit" id='submitDataForm' type="button" class="btn btn-sm">Save Changes</button>-->
-                    <button id='submitDataForm' class="btn btn-sm">Save Changes</button>
+                    <button id='submitDataForm' class="btn btn-sm btnSubmit">Save Changes</button>
                     <!--<input type="submit" id='submitDataForm' value="Save Changes" class="btn btn-sm">-->
                 </div>
-            	</div>            	
+            	</div>
             </div>
             <div class="modal-footer">
             </div>

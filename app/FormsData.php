@@ -31,7 +31,13 @@ class FormsData extends Eloquent {
 		//$txtDebug .= ", \$this - ".print_r($this, 1);
 		$attr = $this->attributesToArray();
 		$data = json_decode($attr['data'], true);
-		$data = array_map("json_decode", $data);
+		///$txtDebug .= ", \$data A - ".print_r($data, 1);
+		//$data = array_map("json_decode", $data);
+		$data = array_map(function($inp) {
+			$from_json = json_decode($inp, true);
+			return $from_json ? $from_json : $inp;
+		}, $data);
+		///$txtDebug .= ", \$data B - ".var_export($data, 1)."\n";
 		$form = Form::where("id", $attr['form_id'])->first()->toArray();
 		/*foreach ($data AS $di=>$d) {
 			echo "<br>Decoding {$di}";
@@ -49,23 +55,26 @@ class FormsData extends Eloquent {
 			else $fieldss[$f['name']][] = $field;
 		}
 
-		foreach ($fieldss AS $fi=>$f) if (count($f) > 1) {
-			$tt = $form['name']."\n";
-			foreach ($f AS $ffi=>$ff) {
-				///$data[$fi][$ffi] = nl2br($data[$fi][$ffi]);
-				$tt .= "{$ff['label']}: ";
-				if ($ff['type'] == "boolean") {
-					if ($data[$fi][$ffi]) $tt .= $ff['opts']['true'];
-					else $tt .= $ff['opts']['false'];
+		foreach ($fieldss AS $fi=>$f) {
+			if (count($f) > 1) {
+				$tt = $form['name']."\n";
+				foreach ($f AS $ffi=>$ff) {
+					///$data[$fi][$ffi] = nl2br($data[$fi][$ffi]);
+					$tt .= "{$ff['label']}: ";
+					if ($ff['type'] == "boolean") {
+						if ($data[$fi][$ffi]) $tt .= $ff['opts']['true'];
+						else $tt .= $ff['opts']['false'];
+					}
+					else $tt .= "{$data[$fi][$ffi]}";
+					$tt .= "\n";
 				}
-				else $tt .= "{$data[$fi][$ffi]}";
-				$tt .= "\n";
+				///echo "<br>\$tt - {$tt}";
+				//echo "\$tt - <pre>{$tt}</pre>";
+				///$tt = nl2br($tt);
+				///echo "<br>\$tt - {$tt}";
+				$data[$fi] = $tt;
 			}
-			///echo "<br>\$tt - {$tt}";
-			//echo "\$tt - <pre>{$tt}</pre>";
-			$tt = nl2br($tt);
-			///echo "<br>\$tt - {$tt}";
-			$data[$fi] = $tt;
+			$data[$fi] = nl2br($data[$fi]);
 		}
 
 		if (array_key_exists("id", $opts) && $opts['id'] == -1) {

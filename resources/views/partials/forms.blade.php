@@ -95,9 +95,9 @@
         $("#updateCustomForm").get(0).reset();
         launchUpdateFormModal(id, true);
       } else if (action == "preview") {
-        $(".modalPreviewForm").modal();
-        $(".modalPreviewForm form").get(0).reset();
-        launchPreviewFormModal(id);
+        ///$(".modalPreviewForm form").get(0).reset();
+        $(".modalDataForm").modal();
+		launchModalFormData(id, null, null, null, null, "previewform");
       } else if (action == "manage") {
         console.log(this);
         //return redirect("list-formsdata");
@@ -110,7 +110,7 @@
       } else if (action == "edit") {
         $(".modalDataForm").modal();
         //launchFormModal(id, true);
-        launchDataModal(id, idForm);
+        launchModalFormData(id, idForm);
       } else if (action == "view") {
         $(".modalDataView").modal();
         launchModalDataView(id, idForm);
@@ -158,10 +158,11 @@
     });
   }
 
-  function launchDataModal(id, form_id, it, el, ajax) {
+  function launchModalFormData(id, form_id, it, el, ajax, mode) {
     if (typeof ajax == "undefined" || ajax == null) ajax = 0;
+    if (typeof mode == "undefined" || mode == null) mode = "dataform";
     //console.log("launchFormModal(id, edit) id - ",id,", edit - ",edit);
-    console.log("launchDataModal(id, form_id) id - ",id,", form_id - ",form_id,", it - ", it,", el - ",el,", ajax - ",ajax);
+    console.log("launchModalFormData(id, form_id) id - ",id,", form_id - ",form_id,", it - ", it,", el - ",el,", ajax - ",ajax,", mode - ",mode);
     //if (it) it.func();
     console.log("  modal-body - ", $(el).parentsUntil(".modal"));
     $(el).parentsUntil(".modal").last().find("[name='id']").each(function(i) {
@@ -183,23 +184,48 @@
         submitData(ev);
       });
     }
+    var theForm = null;
+    var theBody = null;
+    /*if (mode == "dataform") theForm = $("#modalDataForm");
+    else if (mode == "previewform") theForm = $("#modalPreviewForm");*/
+    theForm = $("#modalDataForm");
+    theBody = theForm.find(".modal-body");
+    console.log("  theForm - ",theForm,", .modal-body - ",theBody);
+    var theURL = "/forms/";
+    if (mode == "dataform") theURL += "data/";
+    theURL += id;
+    if (form_id) theURL += "/"+form_id;
+    theURL = "{!! url('/')!!}"+theURL;
     $.ajax({
       type    :"GET",
       dataType:"json",
-      url     :"{!! url('/forms/data/"+ id + "/"+form_id+"')!!}",
+      url     :theURL,
       success :function(data) {
         console.log("data - ", data);
-        if (data[0] !== null) {
-          $("#modalDataForm .modal-title").text(data[0].name);
-          $("#modalDataForm .modal-header i").remove();
-          $("#modalDataForm .modal-header").append("<i>"+data[0].purpose+"</i>");
+        if (theForm != null) {
+          if (mode == "previewform") {
+            $(theForm).find(".txtPreview").css("display", "inherit");
+            $(theForm).find(".btnSubmit").on("click", function (ev) {
+              console.log(".btnSubmit.click(ev) this - ", this);
+              //ev.preventDefault();
+              $("#dataForm").valid();
+            });
+          }
+          if (data[0] !== null) {
+            $(theForm).find(".modal-title").text(data[0].name);
+            $(theForm).find(".modal-header i").remove();
+            $(theForm).find(".modal-header").append("<i>"+data[0].purpose+"</i>");
+          }
+          //$(theForm).find(".modal-body .fields").empty();
+          //$(theForm).find(".modal-body form div").empty();
+          $(theForm).find(".modal-body div").first().empty();
         }
-        $("#modalDataForm .modal-body .fields").empty();
         var theRules = {};
         if (data[1] !== null) {
           var cnt = [];
           for (var i = 0; i < data[1].length; i++) {
-          	if (typeof cnt[data[1][i].name.replace("[]", "")] == "undefined") cnt[data[1][i].name.replace("[]", "")] = 0;
+          	var baseName = data[1][i].name.replace("[]", "");
+          	if (typeof cnt[baseName] == "undefined") cnt[baseName] = 0;
             /*$(".modal-body").append('<div class="form-group"></div>');
              var group = $(".modal-body").find(".form-group").first();
              group.append("<label>RRR</label>");
@@ -225,7 +251,7 @@
             input.className = "form-control input-sm";
             var name = "data["+data[1][i].name+"]";
             //if (data[1][i].name.search(/\[\]/) != -1) name = "data["+data[1][i].name.replace("[]", "")+"]"+"["+cnt[data[1][i].name.replace("[]", "")]+"]";
-            if (data[1][i].name.search(/\[\]/) != -1) name = "data["+data[1][i].name.replace("[]", "")+"]"+"[]";
+            if (data[1][i].name.search(/\[\]/) != -1) name = "data["+data[1][i].name.replace("[]", "")+"]"+"["+cnt[baseName]+"]";
             input.name = name;
             if (data[1][i].name.search(/\[\]/) == -1) input.id = data[1][i].name;
             else input.id = data[1][i].name.replace("[]", i);
@@ -234,7 +260,7 @@
             input.style.width = "initial";
             ///input.type = "text";
             var val = "";
-            if (data[2] !== null) {
+            if (data.length == 3 && data[2] !== null) {
               if (data[1][i].name.search(/\[\]/) == -1) val = data[2][data[1][i].name];
               else val = data[2][data[1][i].name.replace("[]", "")];
             }
@@ -249,6 +275,7 @@
               if (opts.type == "checkbox") {
                 var checked = "";
                 if (val == 1) checked = "checked";
+                $(div).append('<input id="'+data[1][i].name+'_" name="'+name+'" style="opacity: 1" type="text" value="0">');
                 $(div).append('<input id="'+data[1][i].name+'" name="'+name+'" style="opacity: 1" type="checkbox" value="1" '+checked+'>');
               } else if (opts.type == "radio") {
                 var wrapper = document.createElement("div");
@@ -358,7 +385,7 @@
               radioClass: 'iradio_minimal'
             });
             $(group).append(div);
-            $("#modalDataForm .modal-body div").first().append(group);
+            $(theForm).find(".modal-body div").first().append(group);
             $('.datetime').datetimepicker({ collapse: false, sideBySide: true });
             $('.date-only').datetimepicker({ pickTime: false });
             $('.time-only').datetimepicker({ pickDate: false });
@@ -372,10 +399,11 @@
               else if (opts.max) title += " < "+opts.max;
               if (data[1][i].type == "text") title += " characters";
             }
+            console.log("  Using name - ",name);
             $(input).attr("title", title);
             $(input).attr("data-original-title", title);
             if (title != "") $(input).tooltip({placement: "right", html: true, animation: true, template: '<div class="tooltip" role="tooltip" style="white-space: pre-wrap"><div class="tooltip-arrow"></div><div class="tooltip-inner" style="background-color: rgba(128,128,128,0.75); "></div></div>',});
-            cnt[data[1][i].name.replace("[]", "")]++;
+            cnt[baseName]++;
           }
           console.log("  cnt - ",cnt);
         }
@@ -388,8 +416,14 @@
          });*/
 
         var height = $(window).get(0).innerHeight - 200;
-        console.log("  height - ", height, ", #modalDataForm .modal-body height - ", $("#modalDataForm .modal-body").height());
-        if ($("#modalDataForm .modal-body").height() > height) $("#modalDataForm .modal-body").height( height );
+        //console.log("  height - ", height, ", #modalDataForm .modal-body height - ", $("#modalDataForm .modal-body").height());
+        //if ($("#modalDataForm .modal-body").height() > height) $("#modalDataForm .modal-body").height( height );
+
+        if (theForm != null) {
+          console.log("  height - ", height, ", theForm .modal-body height - ", theForm.find(".modal-body").height());
+          if (theForm.find(".modal-body").height() > height) theForm.find(".modal-body").height( height );
+        }
+
 
         jQuery.validator.setDefaults({
           debug: true
