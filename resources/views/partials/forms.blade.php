@@ -247,7 +247,7 @@
             div.className = "col-md-6";
 
             var input = null;
-            if (data[1][i].type != "choice" && data[1][i].type != "rel" && opts.type != "select") input = document.createElement("input");
+            if (data[1][i].type != "choice" && data[1][i].type != "rel" && opts.type != "select" && opts['subtype'] != "select") input = document.createElement("input");
             else input = document.createElement("select");
             input.className = "form-control input-sm";
             var name = "data["+data[1][i].name+"]";
@@ -272,13 +272,13 @@
             if (data[1][i].type == "file") input.type = "file";
 
             if (data[1][i].type == "boolean") {
-              if (opts.type == "") opts.type = "checkbox";
-              if (opts.type == "checkbox") {
+              if (opts.subtype == "") opts.subtype = "checkbox";
+              if (opts.subtype == "checkbox") {
                 var checked = "";
                 if (val == 1) checked = "checked";
                 $(div).append('<input id="'+data[1][i].name+'_" name="'+name+'" style="opacity: 1" type="text" value="0">');
                 $(div).append('<input id="'+data[1][i].name+'" name="'+name+'" style="opacity: 1" type="checkbox" value="1" '+checked+'>');
-              } else if (opts.type == "radio") {
+              } else if (opts.subtype == "radio") {
                 var wrapper = document.createElement("div");
                 var labels = ["False", "True"];
                 var checked = ["", ""];
@@ -292,7 +292,7 @@
                 ///if (opts['true']) $(wrapper).append('<label style="">B <input id="fffB" name="'+data[1][i].name+'" style="opacity: 1" type="radio" value="1"></label>');
                 $(div).append(wrapper);
 
-              } else if (opts.type == "select") {
+              } else if (opts.subtype == "select") {
                 input.className = "form-control select-sm";
                 input.id = data[1][i].name;
                 input.style.width = "5em";
@@ -334,7 +334,7 @@
             } else if (data[1][i].type == "currency") {
               var div2 = document.createElement("div");
               input.style.textAlign = "right";
-              $(div2).append(symbols[opts.type]+" ");
+              $(div2).append(symbols[opts.iso]+" ");
               $(div2).append(input);
               $(input).attr("placeholder", "sdjsldsh");
               //$(input).attr("required", "required");
@@ -373,8 +373,7 @@
               console.log("  !opts['min'] (",opts['min'],") - ",(!opts['min']));
               console.log("  !Boolean(opts['negative']) (",Boolean(opts['negative']),") - ",(!Boolean(opts['negative'])));
               if ((!opts['min'] || opts['min'] == "") && !Boolean(Number(opts['negative']))) opts['min'] = 0;
-
-              if (opts['inputtype'] == "spinner") {
+              if (opts['subtype'] == "spinner") {
               	var optsSpinner = { incremental: true };
               	if (typeof opts['increment'] != "undefined") optsSpinner['step'] = opts['increment'];
               	if (typeof opts['max'] != "undefined") optsSpinner['max'] = opts['max'];

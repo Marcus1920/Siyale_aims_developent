@@ -88,7 +88,7 @@ if (isset($field)) $fff = json_encode($field);
 					</div>
 					<div>
 						{!! Form::label('selTypeBool', 'Type', array('class' => 'col-md-4 control-label')) !!}
-						{!! Form::select('field['.$index.'][opts][boolean][type]',$types['boolean'], "checkbox",['class' => 'form-control select-sm','id' => 'selTypeBool', 'style'=>"width: 10em"]) !!}
+						{!! Form::select('field['.$index.'][opts][boolean][subtype]',$types['boolean'], "checkbox",['class' => 'form-control select-sm','id' => 'selTypeBool', 'style'=>"width: 10em"]) !!}
 					</div>
 				</div>
 				<div class="optsChoice" style="clear: both; margin-left: 1em;">
@@ -107,7 +107,7 @@ if (isset($field)) $fff = json_encode($field);
 				<div class="optsCurrency" style="clear: both; margin-left: 1em;">
 					<div>
 						{!! Form::label('selTypeCurrency', 'Type', array('class' => 'col-md-4 control-label')) !!}
-						{!! Form::select('field['.$index.'][opts][currency][type]',$types['currency'], "",['class' => 'form-control select-sm','id' => 'selTypeCurrency', 'style'=>"width: 10em" ]) !!}
+						{!! Form::select('field['.$index.'][opts][currency][iso]',$types['currency'], "",['class' => 'form-control select-sm','id' => 'selTypeCurrency', 'style'=>"width: 10em" ]) !!}
 					</div>
 					<div>
 						{!! Form::label('txtMinCurrency', 'Min', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
@@ -167,7 +167,7 @@ if (isset($field)) $fff = json_encode($field);
 					</div>
 					<div>
 						{!! Form::label('selInputType', 'Input Type', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
-						{!! Form::select('field[][opts][number][inputtype]',$types['number'], "",['class' => 'form-control select-sm','id'=>'selInputType', 'style'=>"width: 50% !important", 'maxlength'=>"-1"]) !!}
+						{!! Form::select('field[][opts][number][subtype]',$types['number'], "",['class' => 'form-control select-sm','id'=>'selInputType', 'style'=>"width: 50% !important", 'maxlength'=>"-1"]) !!}
 					</div>
 					<div>
 						{!! Form::label('txtIncrement', 'Increment', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
