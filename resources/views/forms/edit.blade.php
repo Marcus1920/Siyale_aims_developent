@@ -30,7 +30,7 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
             {!! Form::open(['url' => 'updateForm', 'method' => 'post', 'class' => 'form-horizontal', 'id'=>"updateCustomForm" ]) !!}
             {!! Form::hidden('formId',NULL,['id' => 'formId']) !!}
             {!! Form::hidden('id',Auth::user()->id,[]) !!}
-            <div style="border: 1px solid red; float: left; width: 50%">
+            <div style="border: 0px solid red; float: left; width: 50%">
             	<div class="form-group">
                     {!! Form::label('name', 'Name', array('class' => 'col-md-2 control-label')) !!}
                     <div class="col-md-4">
@@ -51,7 +51,7 @@ $dbTables = array_merge(array(''=>"-- None --"), $dbTables);
                     </div>
                 </div>
             </div>
-            <div style="border: 1px solid green; float: right; width: 50%">
+            <div style="border: 0px solid green; float: right; width: 50%">
             	<div class="">
 		            {!! Form::label('selTable', 'Table', array('class' => 'col-md-3 control-label')) !!}
 		            <div class="col-md-9" >

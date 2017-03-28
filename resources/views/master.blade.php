@@ -548,5 +548,15 @@
 @include('partials.refresh')
 @include('partials.timeout')
 
+<script>
+    var APP_DEBUG = {{ env("APP_DEBUG", 0) }};
+    console.log("APP_DEBUG: ",APP_DEBUG," > 2 - ",(APP_DEBUG > 2));
+</script>
+<?php
+    ///$env = App::environment();
+    //$env = env("APP_LOCAL", 666);
+   // die("\$env<pre>".var_export($env, 1)."</pre>");
+?>
+    
     </body>
 </html>

@@ -368,6 +368,24 @@
                });*/
               if ((opts.decimals) == 0) $(input).attr("data-rule-digits", "true");
               else $(input).attr("data-rule-number", "true");
+
+              console.log("  opts['min'] (",opts['min'],") == false - ",(opts['min']== false));
+              console.log("  !opts['min'] (",opts['min'],") - ",(!opts['min']));
+              console.log("  !Boolean(opts['negative']) (",Boolean(opts['negative']),") - ",(!Boolean(opts['negative'])));
+              if ((!opts['min'] || opts['min'] == "") && !Boolean(Number(opts['negative']))) opts['min'] = 0;
+
+              if (opts['inputtype'] == "spinner") {
+              	var optsSpinner = { incremental: true };
+              	if (typeof opts['increment'] != "undefined") optsSpinner['step'] = opts['increment'];
+              	if (typeof opts['max'] != "undefined") optsSpinner['max'] = opts['max'];
+              	if (typeof opts['min'] != "undefined") optsSpinner['min'] = opts['min'];
+								//optsSpinner['numberFormat'] = "C";
+								optsSpinner['page'] = new Number(optsSpinner['step'])*1;
+								optsSpinner['page'] =6;
+								console.log("  optsSpinner - ",optsSpinner);
+              	$(input).spinner( optsSpinner );
+              }
+
             } else if (data[1][i].type == "text" && opts.lines && opts.lines > 1) {
               $(div).append('<textarea class="form-control" id="'+data[1][i].name+'" name="'+name+'" rows="'+opts.lines+'">'+val+'</textarea>');
             } else if (data[1][i].type == "rel") {
@@ -400,6 +418,7 @@
               else if (opts.max) title += " < "+opts.max;
               if (data[1][i].type == "text") title += " characters";
             }
+            if (opts['increment']) title += ", in increments of "+opts['increment'];
             if (APP_DEBUG > 1) console.log("  Using name - ",name);
             $(input).attr("title", title);
             $(input).attr("data-original-title", title);

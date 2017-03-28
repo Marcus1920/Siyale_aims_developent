@@ -169,6 +169,10 @@ if (isset($field)) $fff = json_encode($field);
 						{!! Form::label('selInputType', 'Input Type', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
 						{!! Form::select('field[][opts][number][inputtype]',$types['number'], "",['class' => 'form-control select-sm','id'=>'selInputType', 'style'=>"width: 50% !important", 'maxlength'=>"-1"]) !!}
 					</div>
+					<div>
+						{!! Form::label('txtIncrement', 'Increment', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
+						{!! Form::text('field[][opts][number][increment]',null,['class' => 'form-control input-sm','id'=>'txtIncrement', 'style'=>"width: 5em !important", 'maxlength'=>"-1", 'title'=>"Only applicable for Dropdown and Spinner"]) !!}
+					</div>
 				</div>
 				<div class="optsText" style="clear: both; margin-left: 1em;">
 					<div>
