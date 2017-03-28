@@ -102,8 +102,6 @@
 
     //console.log("um - ", );
 
-  });
-
 	@if (count($errors) > 0)
 		@if (Request::old("formId"))
 			//alert("Launching update form for id <?php echo Request::old("formId"); ?>");
@@ -117,5 +115,6 @@
 		$('#modalEditForm').modal('show');
 		launchUpdateFormModal({{$id}});
 	@endif
+	});
 </script>
 @endsection
