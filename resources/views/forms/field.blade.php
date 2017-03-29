@@ -149,9 +149,8 @@ if (isset($field)) $fff = json_encode($field);
 				</div>
 				<div class="optsNumber" style="clear: both; margin-left: 1em;">
 					<div>
-							{!! Form::label('chkNegative', 'Negatives', array('class' => 'col-md-4 control-label')) !!}
-							{!! Form::hidden('field[][opts][number][negative]',0,['id'=>'chkNegative_']) !!}
-							{!! Form::checkbox('field[][opts][number][negative]',1, null,['id'=>'chkNegative', 'style'=>"padding-top: 10px;opacity: 1"]) !!}
+							{!! Form::label('chkNegative', 'Polarity', array('class' => 'col-md-4 control-label')) !!}
+							{!! Form::select('field[][opts][number][polarity]',array(''=>"Select",'1'=>"Positive",'-1'=>"Negative",'0'=>"Either"), "",['class' => 'form-control select-sm','id'=>'selPolarity', 'style'=>"width: 50% !important", 'maxlength'=>"-1"]) !!}
 					</div>
 					<div>
 						{!! Form::label('txtDecimals', 'Decimals', array('class' => 'col-md-4 control-label', 'style'=>"clear: both")) !!}
