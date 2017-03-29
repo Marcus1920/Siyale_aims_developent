@@ -13,9 +13,9 @@
             </div>
             <div class="modal-body">
             {!! Form::open(['url' => 'updateFormData', 'method' => 'post', 'class' => 'form-horizontal', 'id'=>"dataForm", 'style'=>"height: 100%" ]) !!}
-            formId {!! Form::text('formId',NULL,['class' => 'form-control input-sm','id' => 'formId']) !!}
-            id {!! Form::text('id',NULL, ['class' => 'form-control input-sm', 'id'=>"formDataId"]) !!}
-            AJAX{!! Form::text('ajax',NULL, ['class' => 'form-control input-sm', 'id'=>"formAjax"]) !!}
+            {!! Form::hidden('formId',NULL,['class' => 'form-control input-sm','id' => 'formId']) !!}
+            {!! Form::hidden('id',NULL, ['class' => 'form-control input-sm', 'id'=>"formDataId"]) !!}
+            {!! Form::hidden('ajax',NULL, ['class' => 'form-control input-sm', 'id'=>"formAjax"]) !!}
             	<div class="fields" style="height: 100%; overflow-x: hidden; overflow-y: auto;"></div>
             	<div class="form-group">
                 <div class="col-md-offset-2 col-md-10">
