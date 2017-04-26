@@ -108,9 +108,10 @@ Route::get('add-user', ['middleware' => 'resetLastActive', function () {
 }]);
 
 
-Route::get('/', function () {
+Route::get('/', ['middleware' => 'guest', function () {
     return view('auth.login');
-});
+}]
+);
 
 Route::controllers([
     'auth' => 'Auth\AuthController',
